@@ -99,10 +99,11 @@ export class RoomLink {
     }
   }
   makePeer(generation) {
-    this.generation = generation; this.pendingIce = []; this.described = false; this.localIce = [];
-    this.localCandidates = 0; this.remoteCandidates = 0;
+    this.generation = generation; this.pendingIce = this.earlyIce?.get(generation) || []; this.described = false; this.localIce = [];
+    for (const key of this.earlyIce?.keys() || []) if (key <= generation) this.earlyIce.delete(key);
+    this.localCandidates = 0; this.remoteCandidates = this.pendingIce.length;
     const old = this.pc; this.pc = null; old?.close();
-    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }] }); this.pc = pc; this.channel = null;
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }] }); this.pc = pc; this.channel = null; this.chatChannel = null;
     pc.onicecandidate = event => {
       if (this.pc !== pc) return;
       if (!event.candidate) { this.hooks.onDiagnostics?.({ local: this.localCandidates, remote: this.remoteCandidates, gathering: 'complete', ice: pc.iceConnectionState }); return; }
@@ -111,7 +112,7 @@ export class RoomLink {
       if (!this.described) this.localIce.push(event.candidate.toJSON());
       else this.signal('ice', event.candidate.toJSON(), generation).catch(error => this.hooks.onRetryError?.(error.message));
     };
-    pc.ondatachannel = event => { if (this.pc === pc) this.attach(event.channel, pc); };
+    pc.ondatachannel = event => { if (this.pc === pc) { if (event.channel.label === 'rere-chat-v1' && this.room.chat) this.attachChat(event.channel, pc); else if (event.channel.label !== 'rere-chat-v1') this.attach(event.channel, pc); else event.channel.close(); } };
     pc.onconnectionstatechange = () => {
       if (this.pc !== pc || this.abort.signal.aborted) return;
       if (['failed', 'closed'].includes(pc.connectionState)) this.pause();
@@ -131,6 +132,14 @@ export class RoomLink {
     if (channel.readyState === 'open') open();
     channel.addEventListener('close', () => { if (this.pc === pc && !this.abort.signal.aborted) this.pause(); });
   }
+  attachChat(channel, pc) {
+    this.chatChannel = channel; this.hooks.onChatChannel?.(channel);
+    const update = () => { if (this.pc === pc && !this.abort.signal.aborted) this.hooks.onChatState?.(); };
+    channel.addEventListener('open', update); channel.addEventListener('close', update); if (channel.readyState === 'open') update();
+    channel.addEventListener('close', () => {
+      if (this.pc === pc && !this.abort.signal.aborted && this.room.role === 'host' && pc.connectionState === 'connected') this.attachChat(pc.createDataChannel('rere-chat-v1', { ordered: true }), pc);
+    });
+  }
   pause() {
     this.hooks.onPaused?.(); clearTimeout(this.retryTimer);
     this.retryTimer = setTimeout(() => this.reconnect(), 500);
@@ -142,7 +151,7 @@ export class RoomLink {
     for (const candidate of this.localIce.splice(0)) await this.signal('ice', candidate, generation);
   }
   async reconnect(force = false) {
-    if (this.abort.signal.aborted || this.connected || this.negotiating || !this.peer) return;
+    if (this.abort.signal.aborted || (this.connected && !force) || this.negotiating || !this.peer) return;
     if (force) { this.blocked = false; this.attempts = 0; }
     if (this.blocked) return;
     // Late signaling and socket reconnects must not discard an offer still in flight.
@@ -153,6 +162,7 @@ export class RoomLink {
       if (this.room.role === 'host') {
         const generation = this.generation + 1, pc = this.makePeer(generation);
         this.attach(pc.createDataChannel('rere-transfer-v2', { ordered: true }), pc);
+        if (this.room.chat) this.attachChat(pc.createDataChannel('rere-chat-v1', { ordered: true }), pc);
         await pc.setLocalDescription(await pc.createOffer());
         await this.describedSignal('offer', pc, generation);
       } else { this.hooks.onConnecting?.(); await this.signal('restart', {}); }
@@ -166,13 +176,19 @@ export class RoomLink {
       this.peer = true; if (!this.connected) await this.reconnect(); return;
     }
     if (message.type === 'peer-left') { this.peer = false; const pc = this.pc; this.pc = null; pc?.close(); this.channel = null; this.hooks.onPeerLeft?.(); return; }
-    if (message.type === 'restart') { if (this.room.role === 'host') await this.reconnect(); return; }
+    if (message.type === 'restart') { if (this.room.role === 'host' && message.generation >= this.generation) await this.reconnect(true); return; }
     const generation = message.generation;
     if (!Number.isSafeInteger(generation) || generation < this.generation) return;
+    if (message.type === 'ice' && (!this.pc || generation > this.generation)) {
+      this.earlyIce ||= new Map(); if (!this.earlyIce.has(generation)) this.earlyIce.set(generation, []);
+      const list = this.earlyIce.get(generation); if (list.length < 64) list.push(message.data);
+      while (this.earlyIce.size > 3) this.earlyIce.delete(this.earlyIce.keys().next().value); return;
+    }
     if (message.type === 'offer' && this.room.role === 'guest') {
       this.blocked = false;
+      if (generation === this.generation && this.pc?.remoteDescription?.type === 'offer' && this.pc.localDescription?.type === 'answer') { await this.describedSignal('answer', this.pc, generation); return; }
       const pc = this.makePeer(generation); this.lastAttempt = Date.now();
-      await pc.setRemoteDescription(message.data); await pc.setLocalDescription(await pc.createAnswer());
+      await pc.setRemoteDescription(message.data); for (const candidate of this.pendingIce.splice(0)) await pc.addIceCandidate(candidate); await pc.setLocalDescription(await pc.createAnswer());
       await this.describedSignal('answer', pc, generation); return;
     }
     if (generation !== this.generation || !this.pc) return;

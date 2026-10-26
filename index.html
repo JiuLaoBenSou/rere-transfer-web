@@ -3,10 +3,10 @@
 <html lang="zh-CN" data-api-origin="https://rere-transfer.video-to-gif-local.workers.dev">
 <head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://rere-transfer.video-to-gif-local.workers.dev wss://rere-transfer.video-to-gif-local.workers.dev; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="热热传：打开网页，把文件和文字传到身边的手机或电脑。同网设备之间点对点交换文件与文字。">
-  <title>热热传 · 把文件传到身边</title><link rel="icon" href="data:,">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><script type="module" src="./workspace.js"></script>
+  <title>热热传 · 把文件传到身边</title><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css"><script type="module" src="./workspace.js"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -14,9 +14,9 @@
     <symbol id="icon-inbox" viewBox="0 0 64 52"><path d="m5 27 10-20h34l10 20v18H5V27Zm0 0h17l5 8h10l5-8h17"/></symbol>
     <symbol id="icon-link" viewBox="0 0 24 24"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m0 12a4 4 0 0 0 6 0l5-5a4 4 0 0 0-6-6l-1 1" transform="translate(0 -1) scale(.96)"/></symbol>
   </defs></svg>
-  <aside class="studio-rail"><a href="./" class="brand">热热传</a><nav aria-label="工作区"><button class="rail-tab active" data-mode="file">文件</button><button class="rail-tab" data-mode="text">文字与代码</button></nav><p>双方在线<br>同一网络</p></aside>
+
   <div class="app-shell">
-    <header class="topbar"><a class="brand" href="./">热热传</a><div class="design-controls" hidden><a href="./styles.html">五种风格</a><label for="theme-select" class="sr-only">页面风格</label><select id="theme-select"><option value="warm">01 亲切工具</option><option value="minimal">02 极简白</option><option value="studio">03 创作工作台</option><option value="privacy">04 安静深色</option><option value="bold">05 鲜明品牌</option><option value="ember">炉火暖色 · 试稿</option></select></div></header>
+    <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-logo-dark.svg" alt="热热传" width="147" height="48"><img class="logo-light" src="./rere-logo-light.svg" alt="热热传" width="147" height="48"></a><div class="design-controls" hidden><a href="./styles.html">五种风格</a><label for="theme-select" class="sr-only">页面风格</label><select id="theme-select"><option value="warm">01 亲切工具</option><option value="minimal">02 极简白</option><option value="studio">03 创作工作台</option><option value="privacy">04 安静深色</option><option value="bold">05 鲜明品牌</option><option value="ember">炉火暖色 · 试稿</option></select></div></header>
     <main>
       <section class="intro"><h1><span>把文件，</span><span>传到身边。</span></h1><p>打开网页，把文件和文字传到身边的手机或电脑。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
@@ -25,10 +25,10 @@
         <form id="pair-form" class="join-form pair-form" novalidate><label for="pair-code" class="sr-only">6位配对码</label><input id="pair-code" type="text" inputmode="numeric" maxlength="7" autocomplete="off" placeholder="输入 6 位配对码"><button class="secondary">连接</button></form>
         <span class="connection-state" id="connection-label" role="status">尚未连接</span>
         <div id="room-details" class="room-details" hidden>
-          <div class="pairing-row"><div id="pairing-panel"><p class="pairing-label">在另一台电脑输入配对码</p><output id="pairing-code" aria-label="本房间的6位配对码"></output><p id="pairing-status" role="status"></p><button id="refresh-pair-code" class="secondary" hidden>获取新配对码</button></div><button id="show-qr" class="secondary">手机扫码</button></div>
+          <div class="room-identity"><strong id="self-device"></strong><button id="rename-device" class="quiet">改名</button><button id="show-qr" class="secondary">手机扫码</button></div><details id="invite-options" open><summary>邀请设备 · 查看配对码和链接</summary><div class="pairing-row"><div id="pairing-panel"><p class="pairing-label">在另一台电脑输入配对码</p><output id="pairing-code" aria-label="本房间的6位配对码"></output><p id="pairing-status" role="status"></p><button id="refresh-pair-code" class="secondary" hidden>获取新配对码</button></div></div>
           <details class="share-more"><summary>复制完整房间链接</summary><label for="invite-link" id="invite-label">在另一台设备打开此链接</label><div class="invite-row"><input id="invite-link" readonly><button id="copy-link" class="secondary">复制链接</button></div></details>
-          <section id="devices-panel" class="devices-panel" aria-label="房间中的设备" hidden><div class="devices-heading"><strong>文件发给</strong><span id="device-count"></span></div><p id="self-device"></p><div id="device-list" class="device-list"></div><p>勾选接收文件的设备；文字发给所有已连通设备。</p></section>
-          <div class="room-tools"><span id="room-expiry"></span><button id="reconnect" class="quiet">重新连接</button><button id="leave-room" class="quiet">退出房间</button></div><p><span id="room-limit">房间最多 6 台设备。</span><span id="network-note">正在检查访问方式…</span></p><p id="signal-note" role="status"></p><p id="resume-note" role="status"></p>
+          </details>
+          <div class="room-tools"><span id="room-expiry"></span><button id="reconnect" class="quiet">重新连接</button><button id="leave-room" class="quiet">退出房间</button></div><p class="room-policy"><span id="room-limit">房间最多 6 台设备。</span><span id="network-note">正在检查访问方式…</span></p><p id="signal-note" role="status"></p><p id="resume-note" role="status"></p>
         </div>
         <details class="join-link-option"><summary>使用已有房间链接</summary><form id="join-form" class="join-form" novalidate><label for="join-link" class="sr-only">房间链接</label><input id="join-link" type="url" maxlength="2048" autocomplete="off" placeholder="粘贴完整房间链接"><button class="secondary">加入房间</button></form></details>
       </section>
@@ -36,26 +36,27 @@
       <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden></button><button id="file-unread" class="quiet" hidden>收到文件 · 查看收件箱</button></div></div>
       <div class="workspace">
         <section class="send-pane" aria-label="发送内容">
-          <div class="tabs" role="tablist" aria-label="内容类型"><button id="file-tab" class="tab active" role="tab" aria-controls="file-panel" aria-selected="true">文件</button><button id="text-tab" class="tab" role="tab" aria-controls="text-panel" aria-selected="false">文字与代码</button></div>
-          <div id="file-panel" role="tabpanel" aria-labelledby="file-tab" class="panel-body">
+          <div class="section-heading"><h2>传文件</h2><span>只发给你选的设备</span></div>
+          <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="房间中的设备" hidden><div class="devices-heading"><strong>文件发给</strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div><p>勾选接收文件的设备；文字发给所有已连通设备。</p></section>
             <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"/></svg><h2>把文件放在这里</h2><label for="files" class="button primary picker-button">或选择文件</label><input id="files" class="sr-only file-input" type="file" multiple><p class="drop-help">连接后可发送 · 保留原文件</p></div>
             <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden><button id="send-files" class="primary" aria-describedby="file-send-hint" disabled>发送文件</button><button id="retry-files" class="secondary" hidden>重试未完成</button><button id="clear-files" class="quiet">清空选择</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
           </div>
-          <div id="text-panel" role="tabpanel" aria-labelledby="text-tab" class="panel-body chat-panel" hidden>
-            <div class="chat-heading"><h2>和身边的设备聊两句</h2><span>配对后自动接收</span></div>
+          <div class="send-feedback" hidden><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden></progress><button id="cancel-send" class="quiet" hidden>停止发送</button></div>
+        </section>
+        <div id="text-panel" aria-label="房间聊天" class="panel-body chat-panel">
+            <div class="chat-heading"><h2>聊两句</h2><span>独立发送 · 自动显示</span></div>
             <div class="chat-window"><div id="chat-empty" class="chat-empty"><p>一段文字，一个链接。<br>发过去，就在那里。</p></div><div id="chat-log" class="chat-log" role="log" aria-label="当前房间聊天消息" aria-live="polite" tabindex="0"></div></div>
             <div class="chat-compose"><label for="text-draft" class="sr-only">消息内容</label><textarea id="text-draft" maxlength="20000" placeholder="发一条消息，也可以粘贴链接或代码…" spellcheck="false" rows="2"></textarea><button id="send-text" class="primary" aria-describedby="text-send-hint" disabled>发送</button></div>
             <div class="chat-compose-meta"><p id="text-send-hint" class="send-hint" role="status"></p><div><span id="text-count">0 / 20,000</span><button id="clear-text" class="quiet">清空输入</button></div></div>
           </div>
-          <div class="send-feedback" hidden><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden></progress><button id="cancel-send" class="quiet" hidden>停止发送</button></div>
-        </section>
         <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"/></svg>收件箱</h2><button id="clear-inbox" class="quiet" hidden>清空</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"/></svg><p>收到的内容会出现在这里</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
       </div>
       <p id="capacity-note" class="prototype-note" role="status">正在检测接收能力…</p><p class="prototype-note">同一房间内自动接收文字和文件，请只与信任的设备配对。请保持双方页面打开；短暂断线可续传，刷新可恢复房间连接，但正在传的文件需重新发送。临时文件可用收件箱「清空」删除；异常关闭后的残留会在下次打开本站时清理。</p>
     </main>
-    <footer><p>文件和文字点对点传输，STUN 仅用于探测连接地址，不转发内容。</p><span>双方在线 · 保持页面打开</span></footer>
+    <footer><p>文件仅在选中的设备间直传。聊天发给房间所有设备，必要时经房间内其他设备送达。</p><span>双方在线 · 保持页面打开</span></footer>
   </div>
   <dialog id="qr-dialog"><h2>同一个房间，同一个入口</h2><img id="qr-image" alt="当前房间链接二维码" width="220" height="220"><p id="qr-note">正在检查访问方式…</p><button class="primary">关闭</button></dialog>
   <dialog id="copy-dialog"><h2>请手动复制</h2><p>浏览器未允许自动复制，可全选下面的内容。</p><textarea readonly aria-label="待复制内容"></textarea><button class="primary">关闭</button></dialog>
+<dialog id="name-dialog"><h2>给这台设备起个名字</h2><form id="name-form"><label for="device-name">设备名称</label><input id="device-name" maxlength="24" required autocomplete="off"><p id="name-error" role="alert"></p><div class="actions"><button class="primary">保存</button><button id="cancel-name" type="button" class="quiet">取消</button></div></form></dialog>
 </body>
 </html>

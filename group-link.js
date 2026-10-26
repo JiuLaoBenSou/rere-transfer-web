@@ -12,24 +12,27 @@ export class GroupLink extends RoomLink {
     if(message.type==='members'){
       if(this.epoch!==message.selfEpoch){for(const edge of this.edges.values())edge.dispose();this.edges.clear();}
       this.epoch=message.selfEpoch;this.members=message.peers;
+      if(message.self)this.hooks.onSelf?.(message.self);
       for(const[id,edge]of this.edges)if(!this.members.some(p=>p.peerId===id)){edge.dispose();this.edges.delete(id);this.hooks.onRemoved?.(id);}
       for(const peer of this.members){
         let edge=this.edges.get(peer.peerId);
         if(edge&&edge.target.epoch!==peer.epoch){edge.dispose();this.edges.delete(peer.peerId);edge=null;this.hooks.onRemoved?.(peer.peerId);}
         if(!edge&&peer.online){
           const update=()=>this.hooks.onMembers?.(this.members,this.edges);
-          edge=new PeerLink({...this.identity,role:this.identity.peerId<peer.peerId?'host':'guest',peerPresent:true,generation:0},{
+          edge=new PeerLink({...this.identity,role:this.identity.peerId<peer.peerId?'host':'guest',peerPresent:true,generation:0,chat:!!this.identity.features?.includes('chat-v1')&&!!peer.features?.includes('chat-v1')},{
             onChannel:channel=>this.hooks.onChannel?.(channel,peer),onConnecting:update,
+            onChatChannel:channel=>this.hooks.onChatChannel?.(channel,peer),onChatState:update,
             onConnected:()=>{update();this.hooks.onConnected?.();},onPaused:update,onBlocked:update,
-            onRetryError:update,onDiagnostics:update,
+            onRetryError:message=>{edge.lastError=message;update();},onDiagnostics:value=>{edge.diagnostics=value;update();},
           });edge.owner=this;edge.target=peer;this.edges.set(peer.peerId,edge);await edge.reconnect();
         }
+        if(edge)edge.target=peer;
       }
       this.peer=this.members.length>0;this.hooks.onMembers?.(this.members,this.edges);return;
     }
     const edge=this.edges.get(message.from);
     if(edge&&message.fromEpoch===edge.target.epoch&&message.toEpoch===this.epoch)await edge.handle(message);
   }
-  async reconnect(force=false){for(const edge of this.edges?.values()||[])await edge.reconnect(force);}
+  async reconnect(force=false){for(const edge of this.edges?.values()||[])if(!edge.connected||(edge.room.chat&&edge.chatChannel?.readyState!=='open'))await edge.reconnect(force);}
   dispose(){for(const edge of this.edges?.values()||[])edge.dispose();this.edges?.clear();super.dispose();}
 }

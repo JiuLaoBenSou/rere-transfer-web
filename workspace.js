@@ -5,14 +5,17 @@ import { RoomLink } from './room-link.js';
 import { GroupLink } from './group-link.js';
 import { RoomTransfers } from './room-transfers.js';
 import { createTransferMark } from './transfer-mark.js';
-import { apiURL, appBaseURL, inviteURL } from './app-config.js';
+import { apiURL, inviteURL, readInvite } from './app-config.js';
+import { DeviceProfile } from './device-profile.js';
+import { RoomChat } from './room-chat.js';
 const $ = selector => document.querySelector(selector);
 const loopback = ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname);
 $('#network-note').textContent = loopback ? '当前是本机预览，其他设备无法访问此地址。' : '手机和电脑连接同一局域网，用配对码或扫码加入同一房间；网络隔离可能阻止直连。';
 $('#qr-note').textContent = loopback ? '当前二维码仅供本机预览，手机无法访问。' : '用同一局域网下的手机扫码。请保持电脑上的页面打开。';
 $('#invite-label').textContent = loopback ? '在本机另一个浏览器窗口打开此链接' : '在另一台设备打开此链接，或用手机扫码';
 const store = new ReceiverStore();
-const state = { room: null, link: null, session: null, connected: false, busy: false, roomBusy: false, files: [], urls: new Map(), qrUrl: null, stopQueue: false, remote: null, chatQueue: [], currentChat: null, unread: 0 };
+const profile = new DeviceProfile();
+const state = { room: null, link: null, session: null, chat: null, chatBusy: false, connected: false, busy: false, roomBusy: false, files: [], urls: new Map(), qrUrl: null, stopQueue: false, remote: null, chatQueue: [], currentChat: null, unread: 0 };
 const ROOM_CACHE = 'rere-room-v1';
 const targets = new Set(), deviceResults = new Map(), knownPeers = new Set();
 const roomPath = room => '/api/' + (room.group ? 'groups' : 'rooms') + '/' + room.roomId;
@@ -41,10 +44,11 @@ function controls() {
   $('#send-files').disabled = !state.connected || state.busy || (state.room?.group && !targets.size) || !state.files.some(item => item.status !== 'done');
   $('#retry-files').hidden = !state.files.some(item => ['failed', 'cancelled'].includes(item.status));
   $('#retry-files').disabled = !state.connected || state.busy;
-  $('#send-text').disabled = !state.connected || !$('#text-draft').value.trim().length || state.chatQueue.length >= 20;
+  const chatReady = state.room?.group ? !!state.chat?.connected.length : state.connected && !state.busy;
+  $('#send-text').disabled = !chatReady || !$('#text-draft').value.trim().length || state.chatQueue.length >= 20;
   $('#files').disabled = state.busy; $('#clear-files').disabled = state.busy; $('#text-draft').disabled = false;
   $('#cancel-send').hidden = !state.busy;
-  $('#reconnect').disabled = !state.room || (state.room.group ? !(state.link?.members || []).some(p => !state.link.edges.get(p.peerId)?.connected) : state.connected);
+  $('#reconnect').disabled = !state.room || (state.room.group ? !(state.link?.members || []).some(p => { const edge=state.link.edges.get(p.peerId); return !edge?.connected || (edge.room.chat && edge.chatChannel?.readyState !== 'open'); }) : state.connected);
   document.querySelectorAll('.device-row input').forEach(input => { input.disabled = state.busy; });
   const pending = state.files.some(item => item.status !== 'done');
   const unavailable = state.busy ? '本次传输尚未结束，请查看下方进度；需要时可点「停止发送」。'
@@ -52,24 +56,13 @@ function controls() {
     : !state.connected ? (state.link?.peer ? '另一台设备已加入，正在建立直连；连接成功后即可发送。' : '等待另一台设备加入此房间，连接后即可发送。') : '';
   $('#file-send-hint').textContent = unavailable || (!state.files.length ? '先选择文件，再点击「发送文件」。'
     : pending ? (state.room?.group ? '文件仅发给勾选的 ' + targets.size + ' 台设备；文字发给所有已连通设备。' : '已就绪。点击「发送文件」，对方自动接收。') : '这些文件已发送完成。需要再传一次，请重新选择文件。');
-  $('#text-send-hint').textContent = !state.connected ? (state.room ? '连接后即可发送。文字将在对方聊天框直接显示。' : '连接另一台设备，开始聊天。') : state.busy ? '当前传输完成后，会按顺序发送新消息。' : 'Enter 发送 · Shift+Enter 换行';
+  $('#text-send-hint').textContent = !chatReady ? (state.room ? '等待聊天连接建立…' : '连接另一台设备，开始聊天。') : '发给房间所有设备 · Enter 发送 · Shift+Enter 换行';
 }
 async function api(route, { method = 'GET', data, auth = true, keepalive = false } = {}) {
   const response = await fetch(apiURL(route), { method, headers: { 'Content-Type': 'application/json', ...(auth && state.room ? { Authorization: 'Bearer ' + state.room.token } : {}) }, body: data === undefined ? undefined : JSON.stringify(data), keepalive });
   if (!response.ok) { const json = await response.json().catch(() => ({})); throw Object.assign(new Error(json.error || '连接服务暂时不可用，请重试。'), { status: response.status }); }
   return response;
 }
-function mode(kind) {
-  const text = kind === 'text'; $('#file-panel').hidden = text; $('#text-panel').hidden = !text;
-  $('.workspace').classList.toggle('chat-mode', text); $('.inbox-pane').hidden = text;
-  if (text) { state.unread = 0; $('#chat-unread').hidden = true; $('#chat-log').scrollTop = $('#chat-log').scrollHeight; }
-  else $('#file-unread').hidden = true;
-  for (const [id, active] of [['file-tab', !text], ['text-tab', text]]) { $('#' + id).classList.toggle('active', active); $('#' + id).setAttribute('aria-selected', String(active)); $('#' + id).tabIndex = active ? 0 : -1; }
-  document.querySelectorAll('.rail-tab').forEach(button => button.classList.toggle('active', button.dataset.mode === kind));
-}
-$('#file-tab').addEventListener('click', () => mode('file')); $('#text-tab').addEventListener('click', () => mode('text'));
-document.querySelectorAll('.rail-tab').forEach(button => button.addEventListener('click', () => mode(button.dataset.mode)));
-$('.tabs').addEventListener('keydown', event => { if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) { event.preventDefault(); const text = event.key === 'End' || (event.key !== 'Home' && $('#text-panel').hidden); mode(text ? 'text' : 'file'); $(text ? '#text-tab' : '#file-tab').focus(); } });
 function textElement(tag, text, className) { const node = document.createElement(tag); node.textContent = text; if (className) node.className = className; return node; }
 function renderFiles() {
   $('#file-list').replaceChildren();
@@ -101,9 +94,9 @@ $('#clear-files').addEventListener('click', () => { $('#files').value = ''; sele
 for (const type of ['dragenter', 'dragover']) $('#drop-zone').addEventListener(type, event => { event.preventDefault(); if (!state.busy) $('#drop-zone').classList.add('drag-over'); });
 for (const type of ['dragleave', 'drop']) $('#drop-zone').addEventListener(type, event => { event.preventDefault(); $('#drop-zone').classList.remove('drag-over'); if (type === 'drop') selected(event.dataTransfer.files); });
 $('#text-draft').addEventListener('input', () => { $('#text-count').textContent = $('#text-draft').value.length.toLocaleString('zh-CN') + ' / 20,000'; controls(); });
-$('#clear-text').addEventListener('click', () => { if (state.busy) return; $('#text-draft').value = ''; $('#text-draft').dispatchEvent(new Event('input')); });
+$('#clear-text').addEventListener('click', () => { $('#text-draft').value = ''; $('#text-draft').dispatchEvent(new Event('input')); });
 $('#text-draft').addEventListener('keydown', event => { if (!event.isComposing && event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); $('#send-text').click(); } });
-function sendStatus(message) { if (state.currentChat) return; $('.send-feedback').hidden = false; $('#send-status').textContent = message; if (!message.startsWith('正在发送 ')) transferMark.reset(); }
+function sendStatus(message) { $('.send-feedback').hidden = false; $('#send-status').textContent = message; if (!message.startsWith('正在发送 ')) transferMark.reset(); }
 async function sending(task) {
   if (!state.connected || !state.session || state.busy) return;
   const session = state.session; state.busy = true; state.stopQueue = false; controls(); $('#send-progress').value = 0; $('#send-progress').hidden = true;
@@ -142,19 +135,18 @@ function chatBubble(text, mine = false, sender = '对方') {
   return item;
 }
 async function pumpChat() {
-  if (state.busy || !state.connected || !state.session || !state.chatQueue.length) return;
-  const message = state.chatQueue.shift(), session = state.session;
-  state.busy = true; state.currentChat = message; controls(); message.node.querySelector('.chat-status').textContent = '发送中…';
-  try { const result = await session.sendText(message.text); message.node.querySelector('.chat-status').textContent = result?.total ? '已送达 ' + result.total + ' 台设备' : '已送达'; }
+  const session = state.room?.group ? state.chat : state.session;
+  if (state.chatBusy || !session || !(state.room?.group ? state.chat.connected.length : state.connected && !state.busy) || !state.chatQueue.length) return;
+  const message = state.chatQueue.shift();
+  state.chatBusy = !state.room?.group; state.currentChat = message; controls(); message.node.querySelector('.chat-status').textContent = '发送中…';
+  try { const result = await session.sendText(message.text); message.node.querySelector('.chat-status').textContent = result?.total ? (result.delivered === undefined || result.delivered === result.total ? '已送达 ' + result.total + ' 台设备' : '已送达 ' + result.delivered + ' / ' + result.total + ' 台 · 未送达：' + result.missing.join('、')) : '已送达'; }
   catch (error) { message.node.querySelector('.chat-status').textContent = '未送达 · ' + error.message; }
-  finally { if (state.session === session) { state.busy = false; state.currentChat = null; controls(); pumpChat(); } }
+  finally { if (state.chat === session || state.session === session) { state.chatBusy = false; state.currentChat = null; controls(); pumpChat(); } }
 }
 $('#send-text').addEventListener('click', () => {
-  const text = $('#text-draft').value; if (!state.connected || !text.trim() || state.chatQueue.length >= 20) return;
+  const text = $('#text-draft').value; if ($('#send-text').disabled || !text.trim() || state.chatQueue.length >= 20) return;
   state.chatQueue.push({ text, node: chatBubble(text, true) }); $('#text-draft').value = ''; $('#text-draft').dispatchEvent(new Event('input')); pumpChat(); $('#text-draft').focus();
 });
-$('#chat-unread').addEventListener('click', () => mode('text'));
-$('#file-unread').addEventListener('click', () => mode('file'));
 $('#cancel-send').addEventListener('click', () => { state.stopQueue = true; state.session?.cancel(); });
 function inboxNode(id) { return document.getElementById('received-' + id); }
 function newInboxItem(id) { $('#inbox-empty').hidden = true; const item = document.createElement('article'); item.id = 'received-' + id; item.className = 'received-item'; $('#inbox-list').prepend(item); $('#clear-inbox').hidden = false; return item; }
@@ -217,7 +209,7 @@ function createSession(peer) {
 }
 function renderDevices(peers = state.link?.members || [], edges = state.link?.edges || new Map()) {
   if (!state.room?.group) return;
-  $('#devices-panel').hidden = false; $('#self-device').textContent = state.room.label + '（本机）';
+  $('#devices-panel').hidden = false; $('#self-device').textContent = state.room.label + ' · ' + (state.room.kind || '浏览器') + '（本机）';
   $('#device-count').textContent = (peers.length + 1) + ' / 6 台设备';
   const live = new Set(peers.map(p => p.peerId)); for (const id of targets) if (!live.has(id)) targets.delete(id);
   $('#device-list').replaceChildren();
@@ -230,21 +222,31 @@ function renderDevices(peers = state.link?.members || [], edges = state.link?.ed
     const detail = textElement('span', deviceResults.get(peer.peerId) || (ready ? '已直连' : edge?.blocked ? '未连通 · 可重新连接' : !peer.online ? '暂时离线 · 等待恢复' : '正在直连…'), 'device-status');
     const remote = state.session?.sessions.get(peer.peerId)?.session.remote;
     if (remote) detail.textContent += ' · 单文件 ' + formatBytes(remote.maxFile);
-    label.append(input, textElement('span', peer.label), detail); $('#device-list').append(label);
+    label.append(input, textElement('span', peer.label + ' · ' + (peer.kind || '浏览器')), detail); $('#device-list').append(label);
+    if (edge?.blocked || edge?.lastError) {
+      const info = document.createElement('details'); info.className = 'peer-diagnostics';
+      info.append(textElement('summary', peer.label + ' 的连接诊断'));
+      const d = edge.diagnostics || {};
+      info.append(textElement('p', '本机 ' + (state.room.kind || '浏览器') + ' → ' + (peer.kind || '浏览器') + ' · ICE ' + (d.ice || '等待') + ' · 地址探测 ' + (d.gathering || '等待') + ' · 候选 ' + (d.local || '未知') + ' / ' + (d.remote || '未知')));
+      info.append(textElement('p', edge.lastError || '未建立直连。网络隔离或防火墙可能阻止连接；文字可经房间内已连接设备送达，文件需要双方直连。'));
+      $('#device-list').append(info);
+    }
   }
   const connected = peers.filter(peer => edges.get(peer.peerId)?.connected).length;
   connection(connected ? '已直连 ' + connected + ' 台设备' : peers.length ? '正在直连…' : '等待设备加入', connected > 0);
-  $('#connection-detail').textContent = '本机：' + state.room.label + ' · 文件发给勾选设备 · 文字发给所有已连通设备';
-  $('#reconnect').disabled = !peers.some(p => !edges.get(p.peerId)?.connected);
+  $('#connection-detail').textContent = '文件发给勾选设备 · 聊天独立发送给房间所有设备';
+  $('#reconnect').disabled = !peers.some(p => { const edge=edges.get(p.peerId); return !edge?.connected || (edge.room.chat && edge.chatChannel?.readyState !== 'open'); });
   if (!connected && peers.length && [...edges.values()].some(edge => edge.blocked)) $('#signal-note').textContent = '部分设备未能直连，请检查网络和浏览器权限，再点「重新连接」。';
 }
 async function enter(room) {
+  profile.remember(room); document.body.classList.add('has-room');
   const resumeId = globalThis.crypto.randomUUID?.() || String(Date.now()) + Math.random();
   try { sessionStorage.setItem(ROOM_CACHE, JSON.stringify({ room, resumeId })); } catch {}
-  const pageUrl = new URL(location.href); pageUrl.hash = (room.group ? 'group=' : 'room=') + room.roomId; history.replaceState({ rereResume: resumeId }, '', pageUrl);
+  const pageUrl = new URL(location.href); pageUrl.searchParams.delete('group'); pageUrl.searchParams.delete('room'); pageUrl.hash = (room.group ? 'group=' : 'room=') + room.roomId; history.replaceState({ rereResume: resumeId }, '', pageUrl);
   state.room = room; state.remote = null;
   targets.clear(); deviceResults.clear(); knownPeers.clear();
   state.session = room.group ? new RoomTransfers((id, result) => { deviceResults.set(id, result); renderDevices(); }) : createSession();
+  state.chat = room.group ? new RoomChat(room.peerId, { onMessage: message => { const peer = state.link?.members.find(p => p.peerId === message.from); chatBubble(message.text, false, peer?.label || '房间设备'); }, onChange: () => { controls(); pumpChat(); } }) : null;
   $('#join-link').value = '';
   $('#room-details').hidden = false; $('#invite-link').value = inviteURL(room, document.body.dataset.theme);
   $('#room-limit').textContent = room.group ? '房间最多 6 台设备。' : '此房间最多两台设备。';
@@ -253,9 +255,11 @@ async function enter(room) {
   $('#pair-code').value = '';
   connection(room.role === 'host' ? '等待另一台设备' : '正在直连…');
   if (room.group) state.link = new GroupLink(room, {
+    onSelf: self => { Object.assign(state.room, self); profile.remember(state.room); },
+    onChatChannel: (channel, peer) => state.chat?.attach(peer.peerId, channel),
     onChannel: (channel, peer) => { let entry = state.session.sessions.get(peer.peerId); if (!entry) { const session = createSession(peer); state.session.set(peer.peerId, session, peer); entry = state.session.sessions.get(peer.peerId); } entry.session.attachChannel(channel); },
-    onMembers: (peers, edges) => { for (const peer of peers) if (!knownPeers.has(peer.peerId)) { knownPeers.add(peer.peerId); targets.add(peer.peerId); } renderDevices(peers, edges); },
-    onRemoved: id => { state.session.remove(id); deviceResults.delete(id); },
+    onMembers: (peers, edges) => { state.chat?.updatePeers(peers.filter(p => p.features?.includes('chat-v1'))); for (const peer of peers) { if (!knownPeers.has(peer.peerId)) { knownPeers.add(peer.peerId); targets.add(peer.peerId); } const entry = state.session.sessions.get(peer.peerId); if (entry) Object.assign(entry.peer, peer); } if (peers.length) $('#invite-options').open = false; renderDevices(peers, edges); },
+    onRemoved: id => { state.session.remove(id); state.chat?.remove(id); deviceResults.delete(id); },
     onConnected: () => { renderDevices(); error(); pumpChat(); },
     onSignaling: online => { $('#signal-note').textContent = online ? '' : '房间服务暂时断开，正在恢复；已建立的直连仍可继续。'; },
     onRetryError: message => { $('#signal-note').textContent = message; },
@@ -281,14 +285,15 @@ async function enter(room) {
   controls(); updateExpiry();
 }
 function cleanup(label = '尚未连接') {
+  document.body.classList.remove('has-room');
   try { sessionStorage.removeItem(ROOM_CACHE); } catch {}
   for (const message of state.chatQueue) message.node.querySelector('.chat-status').textContent = '未发送 · 房间已结束';
-  state.chatQueue = []; state.currentChat = null; state.busy = false;
+  state.chatQueue = []; state.currentChat = null; state.busy = false; state.chatBusy = false; state.chat?.dispose(); state.chat = null;
   state.room = null; state.link?.dispose(); state.link = null; const session = state.session; state.session = null; session?.dispose();
   state.remote = null; targets.clear(); knownPeers.clear(); deviceResults.clear(); $('#devices-panel').hidden = true; $('#device-list').replaceChildren(); capacity(); $('#room-details').hidden = true; $('#invite-link').value = ''; $('#join-link').value = ''; $('#pair-code').value = ''; connection(label, false, label !== '尚未连接');
   if (state.qrUrl) { URL.revokeObjectURL(state.qrUrl); state.qrUrl = null; }
   $('#qr-dialog').close();
-  const url = new URL(location.href); url.hash = ''; history.replaceState(null, '', url);
+  const url = new URL(location.href); url.searchParams.delete('group'); url.searchParams.delete('room'); url.hash = ''; history.replaceState(null, '', url);
 }
 async function roomAction(action) {
   if (state.roomBusy || state.room) return;
@@ -299,10 +304,10 @@ async function roomAction(action) {
   } catch (e) { if (state.room) { await api(roomPath(state.room), { method: 'DELETE' }).catch(() => {}); cleanup(); } error(e.message); }
   finally { state.roomBusy = false; controls(); }
 }
-$('#create-room').addEventListener('click', () => roomAction(async () => enter(await (await api('/api/groups', { method: 'POST', data: {}, auth: false })).json())));
+$('#create-room').addEventListener('click', () => roomAction(async () => enter(await (await api('/api/groups', { method: 'POST', data: profile.joinData(), auth: false })).json())));
 $('#pair-form').addEventListener('submit', event => {
   event.preventDefault(); const code = $('#pair-code').value.replace(/\s/g, '');
-  roomAction(async () => { if (!/^\d{6}$/.test(code)) throw new Error('请输入 6 位数字配对码。'); await enter(await (await api('/api/pair', { method: 'POST', data: { code }, auth: false })).json()); });
+  roomAction(async () => { if (!/^\d{6}$/.test(code)) throw new Error('请输入 6 位数字配对码。'); const room = await (await api('/api/pair', { method: 'POST', data: { code, ...profile.pairData(code) }, auth: false })).json(); profile.remember(room, code); await enter(room); });
 });
 $('#refresh-pair-code').addEventListener('click', async () => {
   if (!state.room || state.room.role !== 'host' || state.roomBusy) return;
@@ -322,11 +327,13 @@ function renderPairing() {
   $('#refresh-pair-code').hidden = used || !!remaining;
 }
 async function joinInvite(value) {
-  let id, group;
-  try { const url = new URL(value), params = new URLSearchParams(url.hash.slice(1)); group = params.has('group'); id = params.get(group ? 'group' : 'room'); if (url.origin !== location.origin || url.pathname !== appBaseURL().pathname || !/^[A-Za-z0-9_-]{32}$/.test(id)) throw new Error(); }
-  catch { throw new Error('请使用本站生成的完整房间链接。'); }
-  await enter(await (await api('/api/' + (group ? 'groups' : 'rooms') + '/' + id + '/join', { method: 'POST', data: {}, auth: false })).json());
+  const invite = readInvite(value); if (!invite) throw new Error('请使用本站生成的完整房间链接。');
+  const {roomId: id, group} = invite;
+  await enter(await (await api('/api/' + (group ? 'groups' : 'rooms') + '/' + id + '/join', { method: 'POST', data: group ? profile.joinData(id) : {}, auth: false })).json());
 }
+$('#rename-device').addEventListener('click', () => { $('#device-name').value = state.room?.label || ''; $('#name-dialog').showModal(); $('#device-name').focus(); });
+$('#name-form').addEventListener('submit', async event => { event.preventDefault(); if (!state.room?.group) return; const label = $('#device-name').value.trim(); try { const result = await (await api(roomPath(state.room) + '/profile', {method:'POST',data:{label}})).json(); Object.assign(state.room,result); profile.setName(result.label); $('#name-dialog').close(); renderDevices(); } catch (failure) { $('#name-error').textContent = failure.message; } });
+$('#cancel-name').addEventListener('click', () => $('#name-dialog').close());
 $('#join-form').addEventListener('submit', event => { event.preventDefault(); roomAction(() => joinInvite($('#join-link').value.trim())); });
 $('#leave-room').addEventListener('click', async () => {
   const leaving = state.room; if (!leaving) return;
@@ -356,17 +363,17 @@ $('#show-qr').addEventListener('click', async () => {
 $('#qr-dialog button').addEventListener('click', () => $('#qr-dialog').close()); $('#copy-dialog button').addEventListener('click', () => $('#copy-dialog').close());
 window.addEventListener('beforeunload', event => { if (state.busy || state.session?.incoming) { event.preventDefault(); event.returnValue = ''; } });
 window.addEventListener('pagehide', () => {
-  state.link?.dispose(); state.session?.dispose();
+  state.link?.dispose(); state.session?.dispose(); state.chat?.dispose();
   for (const url of state.urls.values()) URL.revokeObjectURL(url); store.dispose().catch(() => {});
 });
 window.addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
 $('#text-draft').value = ''; $('#files').value = ''; controls();
-const inviteParams = new URLSearchParams(location.hash.slice(1)), inviteRoom = inviteParams.get('group') || inviteParams.get('room');
+let inviteRoom; try { inviteRoom = readInvite(location.href)?.roomId; } catch (failure) { error(failure.message); }
 let savedRoom;
 try { const saved = JSON.parse(sessionStorage.getItem(ROOM_CACHE)); if (saved?.resumeId === history.state?.rereResume && saved?.room?.roomId === inviteRoom && saved.room.expiresAt > Date.now()) savedRoom = saved.room; } catch {}
 if (savedRoom) roomAction(async () => {
   state.room = savedRoom;
-  try { const restored = await (await api(roomPath(savedRoom) + '/resume', { method: 'POST', data: {} })).json(); state.room = null; await enter(restored); }
+  try { const restored = await (await api(roomPath(savedRoom) + '/resume', { method: 'POST', data: savedRoom.group ? profile.joinData(savedRoom.roomId) : {} })).json(); state.room = null; await enter(restored); }
   catch (failure) { const invite = location.href; state.room = null; cleanup(); if (failure.status === 401 && savedRoom.role === 'guest') await joinInvite(invite); else throw failure; }
 });
 else if (inviteRoom) roomAction(() => joinInvite(location.href));

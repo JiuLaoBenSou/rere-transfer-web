@@ -1,0 +1,45 @@
+/* Codex / 2026-10-26. Persistent independent chat alongside selective file transfer. */
+.brand img{display:block;width:139px;height:auto}.brand .logo-dark{display:none}
+body:is([data-theme=ember],[data-theme=privacy],[data-theme=studio]) .logo-dark{display:block}
+body:is([data-theme=ember],[data-theme=privacy],[data-theme=studio]) .logo-light{display:none}
+body .workspace,body[data-theme=ember] .workspace{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start;background:none;border:0;overflow:visible;box-shadow:none}
+body[data-theme=ember] .workspace:before{display:none}
+body .send-pane,body .inbox-pane,body #text-panel{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+body .send-pane,body[data-theme=ember] .send-pane{grid-column:1;grid-row:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}body #text-panel{grid-column:2;grid-row:1 / span 2;padding:22px;position:sticky;top:20px}
+body .inbox-pane,body[data-theme=ember] .inbox-pane{grid-column:1;grid-row:2;margin:0;padding:20px;border:1px solid var(--line);border-radius:var(--radius);min-height:180px}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:19px 24px;border-bottom:1px solid var(--line)}
+.section-heading h2{font-size:17px}.section-heading span,.chat-heading span{color:var(--muted);font-size:12px}
+body .panel-body,body[data-theme=ember] .panel-body{padding:22px}
+body .drop-zone,body[data-theme=ember] .drop-zone{min-height:215px;padding:24px 12px;gap:16px}
+body .upload-icon{height:64px;width:55px}body .drop-zone h2{font-size:20px}
+body .chat-heading{margin:0 0 16px;align-items:center}body .chat-heading h2{font-size:17px}
+body .chat-window{height:310px;min-height:0;position:relative}body .chat-log{height:100%;max-height:none;overflow:auto;padding:16px;overscroll-behavior:contain}
+body .chat-empty{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;min-height:0;font-size:14px;text-align:center}
+body .chat-empty[hidden]{display:none}body .chat-message{max-width:92%}body .chat-compose{margin-top:14px;align-items:flex-end;gap:10px}
+body #text-draft,body[data-theme=ember] #text-draft{min-height:80px;height:80px;max-height:200px;padding:12px;resize:vertical;line-height:1.6;font-size:14px}
+body .chat-compose-meta{display:flex;flex-wrap:wrap;gap:3px;margin-top:8px;font-size:11px}body .chat-compose-meta>div{margin-left:auto;display:flex;align-items:center;gap:10px}
+body .chat-compose-meta .send-hint{font-size:11px;margin:0}body .chat-compose-meta .quiet{font-size:11px;padding:4px;min-height:28px}
+body .devices-panel{margin:0 0 18px;padding:0 0 16px;border:0;border-bottom:1px solid var(--line);background:none}
+body .device-list{grid-template-columns:1fr;gap:7px}body .device-row{display:grid;grid-template-columns:18px minmax(0,1fr);gap:3px 10px;padding:8px 10px;min-width:0}
+body .device-row input{grid-row:1 / span 2}body .device-status{grid-column:2;font-size:11px;text-align:left;margin-left:0;line-height:1.5}body .devices-panel>p{font-size:11px;margin-top:8px}
+.room-identity{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.room-identity>strong{font-size:13px;margin-right:auto}
+#invite-options{margin-top:10px}#invite-options>summary,.peer-diagnostics summary{cursor:pointer;font-size:12px;padding:8px 0;color:var(--muted)}
+.peer-diagnostics{font-size:12px;padding:0 10px}.peer-diagnostics p{overflow-wrap:anywhere;line-height:1.7}
+body .room-tools{margin-top:8px}body .room-details>p{font-size:11px;margin-top:5px}body .join-link-option{max-width:100%}
+body.has-room .intro,body[data-theme=ember].has-room .intro{padding:24px 240px 24px 0;min-height:0}
+body.has-room .intro h1,body[data-theme=ember].has-room .intro h1{font-size:28px}body.has-room .intro>p{display:none}
+body.has-room .transfer-mark,body[data-theme=ember].has-room .transfer-mark{width:160px;height:66px;top:4px;right:20px}
+body.has-room .join-link-option{display:none}#device-name{width:100%;margin:12px 0}#name-error{color:var(--accent)}
+body.has-room .connect-bar>.room-title,body.has-room #create-room,body.has-room #pair-form{display:none}
+body.has-room .room-details{border-top:0;padding-top:0}body.has-room .room-policy{display:none}
+body.has-room .connect-bar{gap:10px}body.has-room .connection-state{font-size:12px}
+body .inbox-header,body[data-theme=ember] .inbox-header{padding:0 0 10px;min-height:0}body .inbox-empty,body[data-theme=ember] .inbox-empty{min-height:110px}
+@media(max-width:760px){
+ body .workspace,body[data-theme=ember] .workspace{grid-template-columns:minmax(0,1fr);gap:18px}
+ body #text-panel{grid-column:1;grid-row:1;position:static;padding:18px}body .send-pane{grid-column:1;grid-row:2}body .inbox-pane,body[data-theme=ember] .inbox-pane{grid-row:3;padding:18px}
+ body .chat-window{height:230px}body .panel-body,body[data-theme=ember] .panel-body{padding:18px}.section-heading{padding:16px 18px}
+ body.has-room .intro,body[data-theme=ember].has-room .intro{padding:18px 0}body.has-room .intro h1,body[data-theme=ember].has-room .intro h1{font-size:24px}
+ body.has-room .intro h1>span{display:inline}body.has-room .transfer-mark{display:none!important}
+ body[data-theme=ember] .topbar{height:74px}.brand img{width:123px}body .chat-compose-meta>div{width:100%;justify-content:flex-end}
+ .room-identity>strong{flex-basis:65%}body .room-identity #show-qr{padding:7px 10px;font-size:12px}body .chat-status{overflow-wrap:anywhere}
+}
