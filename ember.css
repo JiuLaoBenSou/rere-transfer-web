@@ -1,0 +1,72 @@
+/* Codex / 2026-10-25. User boiler-room color references; no scene illustrations. */
+.transfer-mark{display:none}
+body[data-theme=ember]{--bg:#211a17;--surface:#2c211c;--ink:#f2e5d0;--muted:#c8af94;--accent:#efa45b;--accent-ink:#281b12;--soft:#39291f;--line:#644735;--radius:18px;--focus:#f4c28a;color-scheme:dark;min-height:100vh;background:radial-gradient(ellipse at 85% 15%,#ab58270c,transparent 52%),#211a17;color:#f2e5d0}
+body[data-theme=ember] .app-shell{max-width:1232px;padding:0 40px}
+body[data-theme=ember] .topbar{height:94px;border-bottom-color:#6c4b35}
+body[data-theme=ember] .brand{font-size:26px;font-weight:650;letter-spacing:0;color:#f2e5d0}
+body[data-theme=ember] .design-controls>a{display:none}
+body[data-theme=ember] button,body[data-theme=ember] .button{min-height:44px;border-radius:12px;font-weight:550;border-color:#76513b;background:#2c211c;color:#f2e5d0;padding:10px 20px}
+body[data-theme=ember] .primary{background:#efa45b;color:#281b12;border-color:#efa45b;box-shadow:0 3px 16px #c465321c}
+body[data-theme=ember] .secondary{background:#39291f;color:#e7bc91;border-color:#76513b}
+body[data-theme=ember] .quiet{background:transparent;border-color:transparent;color:#c8af94}
+body[data-theme=ember] button:disabled{background:#44352c;color:#c8af94;border-color:#6b503e;box-shadow:none;opacity:.65}
+body[data-theme=ember] button:hover:not(:disabled),body[data-theme=ember] .button:hover{filter:none;background:#443023;box-shadow:none}
+body[data-theme=ember] .primary:hover:not(:disabled){background:#f2b477;box-shadow:0 4px 18px #c4653229}
+body[data-theme=ember] input,body[data-theme=ember] textarea,body[data-theme=ember] select{min-height:44px;background:#271e19;border:1px solid #76513b;border-radius:11px;color:#f2e5d0}
+body[data-theme=ember] input::placeholder,body[data-theme=ember] textarea::placeholder{color:#c8af94;opacity:1}
+body[data-theme=ember] .design-controls select{max-width:188px;padding:10px 14px;font-size:13px;color:#ddc3a6}
+body[data-theme=ember] :is(button,.button,a,input,textarea,select):focus-visible{outline:2px solid #f4c28a;outline-offset:4px;box-shadow:0 0 0 4px #efa45b18}
+body[data-theme=ember] .intro{position:relative;min-height:208px;padding:49px 285px 40px 0}
+body[data-theme=ember] .intro h1{font-size:46px;line-height:1.25;font-weight:650;letter-spacing:-1.5px;color:#f2e5d0}
+body[data-theme=ember] .intro>p{font-size:16px;color:#c8af94;margin-top:16px;max-width:650px;line-height:1.8}
+body[data-theme=ember] .transfer-mark{display:block;position:absolute;right:0;top:43px;width:272px;height:112px}
+body[data-theme=ember] .connect-bar{background:#2c211c;border:1px solid #513b2e;border-radius:18px;padding:23px 26px;gap:18px}
+body[data-theme=ember] .room-title{margin-right:auto}
+body[data-theme=ember] .room-title>.small-icon{display:none}
+body[data-theme=ember] .room-title h2{font-size:18px;font-weight:600}
+body[data-theme=ember] .room-title p{font-size:12px;color:#c8af94}
+body[data-theme=ember] .join-form{max-width:425px;gap:12px}
+body[data-theme=ember] .connection-state{color:#c8af94;font-size:13px}
+body[data-theme=ember] .connection-state:before{background:#a68d76}
+body[data-theme=ember] .connection-state.connected:before{background:#efa45b}
+body[data-theme=ember] .connection-state.failed:before{background:#df977d}
+body[data-theme=ember] .room-details{border-color:#644735}
+body[data-theme=ember] .room-details p{color:#c8af94}
+body[data-theme=ember] .workspace{position:relative;grid-template-columns:minmax(0,2.15fr) minmax(260px,1fr);gap:0;margin-top:22px;border:1px solid #513b2e;border-radius:18px;background:#2c211c;overflow:hidden}
+body[data-theme=ember] .workspace:before{content:"";position:absolute;top:66px;left:27px;right:27px;height:1px;background:#644735;pointer-events:none}
+body[data-theme=ember] .send-pane,body[data-theme=ember] .inbox-pane{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible}
+body[data-theme=ember] .tabs{border:0;padding:0 25px;gap:14px}
+body[data-theme=ember] .tab{border:0;border-radius:0;background:transparent;box-shadow:none;min-height:67px;font-size:16px;color:#c8af94;padding:16px}
+body[data-theme=ember] .tab.active{color:#f2e5d0}
+body[data-theme=ember] .tab.active:after{background:#efa45b;border-radius:3px;left:6px;right:6px}
+body[data-theme=ember] .tab:hover{background:#38281e;box-shadow:none!important}
+body[data-theme=ember] .panel-body{padding:26px 27px 27px}
+body[data-theme=ember] .drop-zone{min-height:290px;border:1px dashed #a66b3c;border-radius:12px;background:transparent;gap:17px;padding:30px 20px}
+body[data-theme=ember] .upload-icon{width:49px;height:56px;stroke-width:2.6;color:#c8af94}
+body[data-theme=ember] .drop-zone h2{font-size:20px;font-weight:600;color:#f2e5d0}
+body[data-theme=ember] .picker-button{min-width:166px;font-size:15px;padding:11px 24px}
+body[data-theme=ember] .drop-help{font-size:13px;color:#c8af94}
+body[data-theme=ember] .inbox-pane{margin:92px 24px 27px 0;border-left:1px solid #644735;padding-left:24px}
+body[data-theme=ember] .inbox-header{padding:0 0 16px;min-height:30px;border:0}
+body[data-theme=ember] .inbox-header h2{font-size:17px;font-weight:600}
+body[data-theme=ember] .inbox-header .small-icon{display:none}
+body[data-theme=ember] .inbox-empty{min-height:210px;padding:28px 6px;gap:15px;color:#c8af94}
+body[data-theme=ember] .inbox-empty>svg{width:52px;height:42px;color:#c8af94;opacity:1;stroke-width:2.5}
+body[data-theme=ember] .inbox-empty p{font-size:13px;color:#c8af94}
+body[data-theme=ember] .inbox-list{max-height:420px}
+body[data-theme=ember] .received-item{padding:16px 0;border-bottom-color:#644735}
+body[data-theme=ember] .received-item p,body[data-theme=ember] .receipt{color:#c8af94}
+body[data-theme=ember] .received-text,body[data-theme=ember] #text-draft{background:#271e19;color:#f2e5d0}
+body[data-theme=ember] .prototype-note{color:#c8af94;margin:20px 2px;font-size:12px;line-height:1.8}
+body[data-theme=ember] footer{color:#c8af94;border-color:#644735;padding:22px 0 26px;font-size:12px}
+body[data-theme=ember] footer>span{font-size:12px}
+body[data-theme=ember] .error-line{color:#f3af8d}
+body[data-theme=ember] dialog{background:#2c211c;color:#f2e5d0;border:1px solid #76513b;border-radius:18px}
+body[data-theme=ember] dialog p{color:#c8af94}
+body[data-theme=ember] .workspace.chat-mode{grid-template-columns:minmax(0,1fr)}
+body[data-theme=ember] .chat-panel{padding-top:24px}
+body[data-theme=ember] .chat-mine .received-text{background:#efa45b;color:#281b12;border-color:#efa45b}
+@media(prefers-reduced-motion:no-preference){body[data-theme=ember] :is(button,.button,input,textarea,select){transition:background-color 350ms ease-in-out,color 350ms ease-in-out,box-shadow 350ms ease-in-out,transform 350ms ease-in-out}body[data-theme=ember] :is(button,.button):active:not(:disabled){transform:scale(.985)}}
+@media(prefers-reduced-motion:reduce){body[data-theme=ember] *,body[data-theme=ember] *:before,body[data-theme=ember] *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(max-width:1000px){body[data-theme=ember] .room-title{width:100%;margin-right:0}body[data-theme=ember] .join-form{max-width:none}body[data-theme=ember] .intro{padding-right:240px}body[data-theme=ember] .intro h1{font-size:39px}body[data-theme=ember] .transfer-mark{width:220px;height:91px;top:52px}}
+@media(max-width:760px){body[data-theme=ember] .app-shell{padding:0 20px}body[data-theme=ember] .topbar{height:80px}body[data-theme=ember] .brand{font-size:23px}body[data-theme=ember] .design-controls select{max-width:170px;font-size:12px}body[data-theme=ember] .intro{min-height:210px;padding:34px 0 86px}body[data-theme=ember] .intro h1{font-size:31px;letter-spacing:-1.4px}body[data-theme=ember] .intro>p{font-size:14px;line-height:1.9;margin-top:14px;max-width:none}body[data-theme=ember] .transfer-mark{width:170px;height:70px;top:auto;bottom:3px;right:0}body[data-theme=ember] .connect-bar{padding:20px;border-radius:18px}body[data-theme=ember] .join-form{min-width:0;flex-basis:100%;gap:8px}body[data-theme=ember] .join-form>button{padding:10px 12px}body[data-theme=ember] .join-form input{font-size:12px;padding:10px}body[data-theme=ember] .workspace{grid-template-columns:1fr;gap:0;margin-top:22px;border-radius:18px}body[data-theme=ember] .workspace:before{top:60px;left:20px;right:20px}body[data-theme=ember] .tabs{padding:0 14px;gap:10px}body[data-theme=ember] .tab{min-height:61px;font-size:14px;padding:14px}body[data-theme=ember] .panel-body{padding:22px 20px}body[data-theme=ember] .drop-zone{min-height:270px;padding:24px 12px;gap:18px}body[data-theme=ember] .drop-zone h2{font-size:19px}body[data-theme=ember] .inbox-pane{border-left:0;border-top:1px solid #644735;margin:0 20px 24px;padding:22px 0 0}body[data-theme=ember] .inbox-empty{min-height:132px;padding:18px 8px}body[data-theme=ember] .inbox-header{padding-bottom:8px}body[data-theme=ember] .prototype-note,body[data-theme=ember] footer{font-size:12px;line-height:1.85}}

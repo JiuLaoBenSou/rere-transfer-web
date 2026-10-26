@@ -1,0 +1,378 @@
+// Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
+import { TransferSession, MAX_FILE } from './transfer.js';
+import { ReceiverStore } from './receiver-store.js';
+import { RoomLink } from './room-link.js';
+import { GroupLink } from './group-link.js';
+import { RoomTransfers } from './room-transfers.js';
+import { createTransferMark } from './transfer-mark.js';
+import { apiURL, appBaseURL, inviteURL } from './app-config.js';
+const $ = selector => document.querySelector(selector);
+const loopback = ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname);
+$('#network-note').textContent = loopback ? '当前是本机预览，其他设备无法访问此地址。' : '手机和电脑连接同一局域网，用配对码或扫码加入同一房间；网络隔离可能阻止直连。';
+$('#qr-note').textContent = loopback ? '当前二维码仅供本机预览，手机无法访问。' : '用同一局域网下的手机扫码。请保持电脑上的页面打开。';
+$('#invite-label').textContent = loopback ? '在本机另一个浏览器窗口打开此链接' : '在另一台设备打开此链接，或用手机扫码';
+const store = new ReceiverStore();
+const state = { room: null, link: null, session: null, connected: false, busy: false, roomBusy: false, files: [], urls: new Map(), qrUrl: null, stopQueue: false, remote: null, chatQueue: [], currentChat: null, unread: 0 };
+const ROOM_CACHE = 'rere-room-v1';
+const targets = new Set(), deviceResults = new Map(), knownPeers = new Set();
+const roomPath = room => '/api/' + (room.group ? 'groups' : 'rooms') + '/' + room.roomId;
+const themes = ['warm', 'minimal', 'studio', 'privacy', 'bold', 'ember'];
+let transferMark;
+const formatBytes = bytes => bytes === 0 ? '0 字节' : bytes < 1024 ? bytes + ' 字节' : bytes < 1048576 ? (bytes / 1024).toFixed(1) + ' KiB' : bytes < 1073741824 ? (bytes / 1048576).toFixed(1) + ' MiB' : (bytes / 1073741824).toFixed(1) + ' GiB';
+function setTheme(theme) {
+  const value = theme === 'ghibli' ? 'ember' : themes.includes(theme) ? theme : 'ember';
+  document.body.dataset.theme = value; $('#theme-select').value = value; transferMark?.refresh();
+  const url = new URL(location.href); url.searchParams.set('theme', value); history.replaceState(history.state, '', url);
+}
+setTheme(new URL(location.href).searchParams.get('theme'));
+transferMark = createTransferMark($('#transfer-mark'));
+$('#theme-select').addEventListener('change', event => setTheme(event.target.value));
+function error(message = '') { $('#room-error').textContent = message; $('#room-error').hidden = !message; }
+function connection(label, connected = false, failed = false) {
+  state.connected = connected; transferMark.setConnected(connected);
+  $('#connection-label').textContent = label;
+  $('#connection-label').classList.toggle('connected', connected); $('#connection-label').classList.toggle('failed', failed); controls();
+}
+function controls() {
+  $('#create-room').disabled = state.roomBusy || !!state.room;
+  $('#join-form button').disabled = state.roomBusy || !!state.room; $('#join-link').disabled = state.roomBusy || !!state.room;
+  $('#pair-form button').disabled = state.roomBusy || !!state.room; $('#pair-code').disabled = state.roomBusy || !!state.room;
+  $('#refresh-pair-code').disabled = state.roomBusy;
+  $('#send-files').disabled = !state.connected || state.busy || (state.room?.group && !targets.size) || !state.files.some(item => item.status !== 'done');
+  $('#retry-files').hidden = !state.files.some(item => ['failed', 'cancelled'].includes(item.status));
+  $('#retry-files').disabled = !state.connected || state.busy;
+  $('#send-text').disabled = !state.connected || !$('#text-draft').value.trim().length || state.chatQueue.length >= 20;
+  $('#files').disabled = state.busy; $('#clear-files').disabled = state.busy; $('#text-draft').disabled = false;
+  $('#cancel-send').hidden = !state.busy;
+  $('#reconnect').disabled = !state.room || (state.room.group ? !(state.link?.members || []).some(p => !state.link.edges.get(p.peerId)?.connected) : state.connected);
+  document.querySelectorAll('.device-row input').forEach(input => { input.disabled = state.busy; });
+  const pending = state.files.some(item => item.status !== 'done');
+  const unavailable = state.busy ? '本次传输尚未结束，请查看下方进度；需要时可点「停止发送」。'
+    : !state.room ? '请先创建或加入同一个房间，连接后才能发送。'
+    : !state.connected ? (state.link?.peer ? '另一台设备已加入，正在建立直连；连接成功后即可发送。' : '等待另一台设备加入此房间，连接后即可发送。') : '';
+  $('#file-send-hint').textContent = unavailable || (!state.files.length ? '先选择文件，再点击「发送文件」。'
+    : pending ? (state.room?.group ? '文件仅发给勾选的 ' + targets.size + ' 台设备；文字发给所有已连通设备。' : '已就绪。点击「发送文件」，对方自动接收。') : '这些文件已发送完成。需要再传一次，请重新选择文件。');
+  $('#text-send-hint').textContent = !state.connected ? (state.room ? '连接后即可发送。文字将在对方聊天框直接显示。' : '连接另一台设备，开始聊天。') : state.busy ? '当前传输完成后，会按顺序发送新消息。' : 'Enter 发送 · Shift+Enter 换行';
+}
+async function api(route, { method = 'GET', data, auth = true, keepalive = false } = {}) {
+  const response = await fetch(apiURL(route), { method, headers: { 'Content-Type': 'application/json', ...(auth && state.room ? { Authorization: 'Bearer ' + state.room.token } : {}) }, body: data === undefined ? undefined : JSON.stringify(data), keepalive });
+  if (!response.ok) { const json = await response.json().catch(() => ({})); throw Object.assign(new Error(json.error || '连接服务暂时不可用，请重试。'), { status: response.status }); }
+  return response;
+}
+function mode(kind) {
+  const text = kind === 'text'; $('#file-panel').hidden = text; $('#text-panel').hidden = !text;
+  $('.workspace').classList.toggle('chat-mode', text); $('.inbox-pane').hidden = text;
+  if (text) { state.unread = 0; $('#chat-unread').hidden = true; $('#chat-log').scrollTop = $('#chat-log').scrollHeight; }
+  else $('#file-unread').hidden = true;
+  for (const [id, active] of [['file-tab', !text], ['text-tab', text]]) { $('#' + id).classList.toggle('active', active); $('#' + id).setAttribute('aria-selected', String(active)); $('#' + id).tabIndex = active ? 0 : -1; }
+  document.querySelectorAll('.rail-tab').forEach(button => button.classList.toggle('active', button.dataset.mode === kind));
+}
+$('#file-tab').addEventListener('click', () => mode('file')); $('#text-tab').addEventListener('click', () => mode('text'));
+document.querySelectorAll('.rail-tab').forEach(button => button.addEventListener('click', () => mode(button.dataset.mode)));
+$('.tabs').addEventListener('keydown', event => { if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) { event.preventDefault(); const text = event.key === 'End' || (event.key !== 'Home' && $('#text-panel').hidden); mode(text ? 'text' : 'file'); $(text ? '#text-tab' : '#file-tab').focus(); } });
+function textElement(tag, text, className) { const node = document.createElement(tag); node.textContent = text; if (className) node.className = className; return node; }
+function renderFiles() {
+  $('#file-list').replaceChildren();
+  const labels = { pending: '待发送', sending: '发送中', done: '已接收 ✓', failed: '未完成', cancelled: '已停止' };
+  for (const item of state.files) {
+    const li = document.createElement('li'); li.dataset.status = item.status;
+    const title = textElement('span', item.file.name); title.title = item.reason || item.file.name;
+    li.append(title, textElement('span', formatBytes(item.file.size) + ' · ' + labels[item.status], 'file-state')); $('#file-list').append(li);
+  }
+  const done = state.files.filter(item => item.status === 'done').length;
+  $('#queue-summary').textContent = state.files.length ? done + ' / ' + state.files.length + ' 个文件已接收' : '';
+  $('#file-actions').hidden = !state.files.length; controls();
+}
+function selected(files) {
+  if (state.busy) return;
+  $('.send-feedback').hidden = true; $('#send-status').textContent = ''; $('#send-progress').value = 0;
+  const list = Array.from(files);
+  state.files = []; renderFiles();
+  if (list.length > 20) { error('一次最多选择 20 个文件。'); return; }
+  if (list.some(file => file.size > MAX_FILE)) { error('单文件超过本版 2 GiB 上限，请选择较小的文件。'); return; }
+  error(); state.files = list.map(file => ({ file, status: 'pending' })); renderFiles();
+}
+$('#files').addEventListener('change', () => {
+  const files = Array.from($('#files').files);
+  // Native pickers otherwise omit change when the identical file is selected again.
+  $('#files').value = ''; selected(files);
+});
+$('#clear-files').addEventListener('click', () => { $('#files').value = ''; selected([]); });
+for (const type of ['dragenter', 'dragover']) $('#drop-zone').addEventListener(type, event => { event.preventDefault(); if (!state.busy) $('#drop-zone').classList.add('drag-over'); });
+for (const type of ['dragleave', 'drop']) $('#drop-zone').addEventListener(type, event => { event.preventDefault(); $('#drop-zone').classList.remove('drag-over'); if (type === 'drop') selected(event.dataTransfer.files); });
+$('#text-draft').addEventListener('input', () => { $('#text-count').textContent = $('#text-draft').value.length.toLocaleString('zh-CN') + ' / 20,000'; controls(); });
+$('#clear-text').addEventListener('click', () => { if (state.busy) return; $('#text-draft').value = ''; $('#text-draft').dispatchEvent(new Event('input')); });
+$('#text-draft').addEventListener('keydown', event => { if (!event.isComposing && event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); $('#send-text').click(); } });
+function sendStatus(message) { if (state.currentChat) return; $('.send-feedback').hidden = false; $('#send-status').textContent = message; if (!message.startsWith('正在发送 ')) transferMark.reset(); }
+async function sending(task) {
+  if (!state.connected || !state.session || state.busy) return;
+  const session = state.session; state.busy = true; state.stopQueue = false; controls(); $('#send-progress').value = 0; $('#send-progress').hidden = true;
+  try { await task(session); } catch (e) { sendStatus(e.message); $('#send-progress').hidden = true; }
+  finally { state.busy = false; renderFiles(); pumpChat(); }
+}
+function sendQueue() {
+  const recipients = [...targets];
+  sending(async session => {
+    for (const item of state.files) {
+      if (item.status === 'done') continue;
+      if (state.stopQueue) break;
+      item.status = 'sending'; item.reason = ''; renderFiles();
+      try {
+        if (state.room?.group) { item.delivered ||= new Set(); await session.sendFile(item.file, recipients, item.delivered); }
+        else await session.sendFile(item.file);
+        item.status = 'done';
+      }
+      catch (e) { item.status = state.stopQueue ? 'cancelled' : 'failed'; item.reason = e.message; renderFiles(); throw e; }
+      renderFiles();
+    }
+    sendStatus(state.stopQueue ? '发送队列已停止。未完成的文件可再次发送。' : '队列发送完成，对方已接收并校验。');
+  });
+}
+$('#send-files').addEventListener('click', sendQueue); $('#retry-files').addEventListener('click', sendQueue);
+function chatBubble(text, mine = false, sender = '对方') {
+  $('#chat-empty').hidden = true;
+  const item = document.createElement('article'); item.className = 'chat-message ' + (mine ? 'chat-mine' : 'chat-remote');
+  const meta = textElement('div', mine ? '我' : sender, 'chat-meta');
+  const time = textElement('time', new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })); meta.append(time);
+  item.append(meta, textElement('pre', text, 'received-text'));
+  if (mine) item.append(textElement('span', '等待发送', 'chat-status'));
+  else { const copy = textElement('button', '复制文字', 'quiet'); copy.addEventListener('click', () => copyText(text, copy)); item.append(copy); }
+  $('#chat-log').append(item); while ($('#chat-log').children.length > 200) $('#chat-log').firstElementChild.remove();
+  $('#chat-log').scrollTop = $('#chat-log').scrollHeight;
+  return item;
+}
+async function pumpChat() {
+  if (state.busy || !state.connected || !state.session || !state.chatQueue.length) return;
+  const message = state.chatQueue.shift(), session = state.session;
+  state.busy = true; state.currentChat = message; controls(); message.node.querySelector('.chat-status').textContent = '发送中…';
+  try { const result = await session.sendText(message.text); message.node.querySelector('.chat-status').textContent = result?.total ? '已送达 ' + result.total + ' 台设备' : '已送达'; }
+  catch (error) { message.node.querySelector('.chat-status').textContent = '未送达 · ' + error.message; }
+  finally { if (state.session === session) { state.busy = false; state.currentChat = null; controls(); pumpChat(); } }
+}
+$('#send-text').addEventListener('click', () => {
+  const text = $('#text-draft').value; if (!state.connected || !text.trim() || state.chatQueue.length >= 20) return;
+  state.chatQueue.push({ text, node: chatBubble(text, true) }); $('#text-draft').value = ''; $('#text-draft').dispatchEvent(new Event('input')); pumpChat(); $('#text-draft').focus();
+});
+$('#chat-unread').addEventListener('click', () => mode('text'));
+$('#file-unread').addEventListener('click', () => mode('file'));
+$('#cancel-send').addEventListener('click', () => { state.stopQueue = true; state.session?.cancel(); });
+function inboxNode(id) { return document.getElementById('received-' + id); }
+function newInboxItem(id) { $('#inbox-empty').hidden = true; const item = document.createElement('article'); item.id = 'received-' + id; item.className = 'received-item'; $('#inbox-list').prepend(item); $('#clear-inbox').hidden = false; return item; }
+function onOffer(meta, receivingSession = state.session, peer) {
+  if (meta.kind === 'text') return;
+  if ($('#file-panel').hidden) { $('#file-unread').hidden = false; $('#file-unread').textContent = '正在接收文件 · 查看收件箱'; }
+  const session = receivingSession, item = newInboxItem(meta.id);
+  item.append(textElement('h3', meta.name), textElement('p', formatBytes(meta.size) + ' · 正在自动接收…'), ...(peer ? [textElement('span', '来自 ' + peer.label, 'receipt')] : []));
+  const stop = textElement('button', '停止接收', 'quiet stop-receive');
+  stop.addEventListener('click', () => { if (session.incoming?.id === meta.id) session.failIncoming('你已停止接收。'); }); item.append(stop);
+}
+function onReceived(result) {
+  $('#resume-note').textContent = '';
+  if (result.kind === 'text') {
+    chatBubble(result.text, false, result.sender || '对方');
+    result.release().catch(error => error.message);
+    if ($('#text-panel').hidden) { state.unread++; $('#chat-unread').textContent = '收到 ' + state.unread + ' 条新消息 · 查看聊天'; $('#chat-unread').hidden = false; }
+    capacity(); return;
+  }
+  transferMark.reset(); const item = inboxNode(result.id) || newInboxItem(result.id); item.replaceChildren();
+  if ($('#file-panel').hidden) { $('#file-unread').hidden = false; $('#file-unread').textContent = '收到文件 · 查看收件箱'; }
+  item.append(textElement('h3', result.kind === 'text' ? '文字与代码' : result.name));
+  if (result.sender) item.append(textElement('span', '来自 ' + result.sender, 'receipt'));
+  if (result.kind === 'file') {
+    const url = URL.createObjectURL(result.blob); state.urls.set(result.id, url);
+    const link = textElement('a', '下载文件', 'button primary download-file'); link.href = url; link.download = result.name; item.append(link);
+    item.append(textElement('p', '已接收到' + (result.storageMode === 'disk' ? '浏览器临时存储' : '页面内存') + '，点击下载并确认保存位置。'));
+  } else {
+    item.append(textElement('pre', result.text, 'received-text')); const copy = textElement('button', '复制文字', 'secondary'); copy.addEventListener('click', () => copyText(result.text, copy)); item.append(copy);
+  }
+  item.append(textElement('p', formatBytes(result.size) + ' · SHA-256 已校验', 'receipt')); capacity();
+}
+function capacity() {
+  $('#capacity-note').textContent = '本机接收：' + (store.mode === 'disk' ? '临时磁盘模式' : '内存模式') + ' · 单文件最多 ' + formatBytes(store.maxFile) + ' · 收件箱 ' + formatBytes(store.retained) + ' / ' + formatBytes(store.maxInbox) + '，最多 20 条。' + (state.remote ? ' 对方单文件上限 ' + formatBytes(state.remote.maxFile) + '。' : '');
+}
+store.ready.then(capacity);
+async function clearInbox() {
+  if (state.session?.incoming) { error('请先完成或停止正在接收的内容。'); return; }
+  $('#clear-inbox').disabled = true;
+  try {
+    for (const url of state.urls.values()) URL.revokeObjectURL(url); state.urls.clear();
+    await store.clear(); state.session?.receipts.clear();
+    $('#inbox-list').replaceChildren(); $('#inbox-empty').hidden = false; $('#clear-inbox').hidden = true; capacity();
+  } catch (e) { error('临时存储清理失败：' + e.message); }
+  finally { $('#clear-inbox').disabled = false; }
+}
+$('#clear-inbox').addEventListener('click', clearInbox);
+function createSession(peer) {
+  const session = new TransferSession(null, {
+    onOffer: meta => onOffer(meta, session, peer), onReceived: result => onReceived(peer ? { ...result, sender: peer.label } : result), onSendStatus: sendStatus,
+    onLocalCapabilities: capacity, onRemoteCapabilities: value => { if (peer) renderDevices(); else state.remote = value; capacity(); },
+    onPrepareProgress: (bytes, total) => sendStatus('正在准备校验 ' + Math.round(bytes / total * 100) + '%…'),
+    onSendProgress: (bytes, total) => { $('#send-progress').hidden = false; $('#send-progress').value = total ? bytes / total * 100 : 100; sendStatus('正在发送 ' + formatBytes(bytes) + ' / ' + formatBytes(total)); transferMark.setProgress(total ? bytes / total : 1, 'send'); },
+    onReceiveProgress: (id, bytes, total) => { const node = inboxNode(id)?.querySelector('p'); if (node) node.textContent = '正在接收 ' + formatBytes(bytes) + ' / ' + formatBytes(total); transferMark.setProgress(total ? bytes / total : 1, 'receive'); },
+    onPaused: () => { $('#resume-note').textContent = '连接暂时中断，页面仍在等待续接。请保持双方页面打开。'; },
+    onResumed: ({ offset }) => { $('#resume-note').textContent = '已恢复连接，从 ' + formatBytes(offset) + ' 继续。'; },
+    onReceiveError: (id, reason) => { transferMark.reset(); const item = inboxNode(id); if (item) { item.querySelector('.actions')?.remove(); item.querySelector('.stop-receive')?.remove(); const p = item.querySelector('p'); if (p) p.textContent = reason; } capacity(); },
+  }, { store, autoAccept: true });
+  return session;
+}
+function renderDevices(peers = state.link?.members || [], edges = state.link?.edges || new Map()) {
+  if (!state.room?.group) return;
+  $('#devices-panel').hidden = false; $('#self-device').textContent = state.room.label + '（本机）';
+  $('#device-count').textContent = (peers.length + 1) + ' / 6 台设备';
+  const live = new Set(peers.map(p => p.peerId)); for (const id of targets) if (!live.has(id)) targets.delete(id);
+  $('#device-list').replaceChildren();
+  for (const peer of peers) {
+    const edge = edges.get(peer.peerId), ready = !!edge?.connected;
+    const label = document.createElement('label'); label.className = 'device-row'; label.dataset.peer = peer.peerId;
+    const input = document.createElement('input'); input.type = 'checkbox'; input.checked = targets.has(peer.peerId); input.disabled = state.busy;
+    input.setAttribute('aria-label', '文件发给' + peer.label);
+    input.addEventListener('change', () => { if (input.checked) targets.add(peer.peerId); else targets.delete(peer.peerId); controls(); });
+    const detail = textElement('span', deviceResults.get(peer.peerId) || (ready ? '已直连' : edge?.blocked ? '未连通 · 可重新连接' : !peer.online ? '暂时离线 · 等待恢复' : '正在直连…'), 'device-status');
+    const remote = state.session?.sessions.get(peer.peerId)?.session.remote;
+    if (remote) detail.textContent += ' · 单文件 ' + formatBytes(remote.maxFile);
+    label.append(input, textElement('span', peer.label), detail); $('#device-list').append(label);
+  }
+  const connected = peers.filter(peer => edges.get(peer.peerId)?.connected).length;
+  connection(connected ? '已直连 ' + connected + ' 台设备' : peers.length ? '正在直连…' : '等待设备加入', connected > 0);
+  $('#connection-detail').textContent = '本机：' + state.room.label + ' · 文件发给勾选设备 · 文字发给所有已连通设备';
+  $('#reconnect').disabled = !peers.some(p => !edges.get(p.peerId)?.connected);
+  if (!connected && peers.length && [...edges.values()].some(edge => edge.blocked)) $('#signal-note').textContent = '部分设备未能直连，请检查网络和浏览器权限，再点「重新连接」。';
+}
+async function enter(room) {
+  const resumeId = globalThis.crypto.randomUUID?.() || String(Date.now()) + Math.random();
+  try { sessionStorage.setItem(ROOM_CACHE, JSON.stringify({ room, resumeId })); } catch {}
+  const pageUrl = new URL(location.href); pageUrl.hash = (room.group ? 'group=' : 'room=') + room.roomId; history.replaceState({ rereResume: resumeId }, '', pageUrl);
+  state.room = room; state.remote = null;
+  targets.clear(); deviceResults.clear(); knownPeers.clear();
+  state.session = room.group ? new RoomTransfers((id, result) => { deviceResults.set(id, result); renderDevices(); }) : createSession();
+  $('#join-link').value = '';
+  $('#room-details').hidden = false; $('#invite-link').value = inviteURL(room, document.body.dataset.theme);
+  $('#room-limit').textContent = room.group ? '房间最多 6 台设备。' : '此房间最多两台设备。';
+  $('#leave-room').textContent = room.group && room.role === 'host' ? '结束房间' : '退出房间';
+  $('#resume-note').textContent = ''; $('#signal-note').textContent = '';
+  $('#pair-code').value = '';
+  connection(room.role === 'host' ? '等待另一台设备' : '正在直连…');
+  if (room.group) state.link = new GroupLink(room, {
+    onChannel: (channel, peer) => { let entry = state.session.sessions.get(peer.peerId); if (!entry) { const session = createSession(peer); state.session.set(peer.peerId, session, peer); entry = state.session.sessions.get(peer.peerId); } entry.session.attachChannel(channel); },
+    onMembers: (peers, edges) => { for (const peer of peers) if (!knownPeers.has(peer.peerId)) { knownPeers.add(peer.peerId); targets.add(peer.peerId); } renderDevices(peers, edges); },
+    onRemoved: id => { state.session.remove(id); deviceResults.delete(id); },
+    onConnected: () => { renderDevices(); error(); pumpChat(); },
+    onSignaling: online => { $('#signal-note').textContent = online ? '' : '房间服务暂时断开，正在恢复；已建立的直连仍可继续。'; },
+    onRetryError: message => { $('#signal-note').textContent = message; },
+    onEnded: reason => { cleanup('房间已结束'); error(reason); },
+  });
+  else state.link = new RoomLink(room, {
+    onChannel: channel => state.session?.attachChannel(channel),
+    onConnecting: () => { if (state.room?.role === 'host' && state.link?.peer) state.room.pairingUsed = true; renderPairing(); connection('正在直连…'); },
+    onConnected: () => {
+      connection('已直连', true); error(); $('#signal-note').textContent = '';
+      if (state.room?.role === 'host') state.room.pairingUsed = true; renderPairing();
+      pumpChat();
+      if ($('#resume-note').textContent.startsWith('连接暂时中断')) $('#resume-note').textContent = '连接已恢复，继续本次传输。';
+    },
+    onPaused: () => connection('连接中断，正在重连…'),
+    onSignaling: online => { $('#signal-note').textContent = online ? '' : '房间服务暂时断开，正在恢复；已建立的直连仍可继续。'; },
+    onRetryError: message => { $('#signal-note').textContent = message + ' 正在重试。'; },
+    onBlocked: message => { connection('直连未成功', false, true); $('#signal-note').textContent = message; },
+    onPeerLeft: () => { if (state.room?.role === 'host') { state.room.pairingUsed = false; state.room.pairingExpiresAt = 0; } renderPairing(); connection('等待另一台设备重新加入'); $('#signal-note').textContent = '对方已离线，房间保留，可获取新配对码或重新打开邀请链接加入。'; },
+    onDiagnostics: value => { $('#connection-detail').textContent = '连接路径：本机 ' + value.local + ' · 对方 ' + value.remote + ' · ' + (value.ice === 'connected' || value.ice === 'completed' ? '已接通' : value.gathering === 'complete' ? '地址探测完成' : '正在探测'); },
+    onEnded: reason => { cleanup('房间已结束'); error(reason); },
+  });
+  controls(); updateExpiry();
+}
+function cleanup(label = '尚未连接') {
+  try { sessionStorage.removeItem(ROOM_CACHE); } catch {}
+  for (const message of state.chatQueue) message.node.querySelector('.chat-status').textContent = '未发送 · 房间已结束';
+  state.chatQueue = []; state.currentChat = null; state.busy = false;
+  state.room = null; state.link?.dispose(); state.link = null; const session = state.session; state.session = null; session?.dispose();
+  state.remote = null; targets.clear(); knownPeers.clear(); deviceResults.clear(); $('#devices-panel').hidden = true; $('#device-list').replaceChildren(); capacity(); $('#room-details').hidden = true; $('#invite-link').value = ''; $('#join-link').value = ''; $('#pair-code').value = ''; connection(label, false, label !== '尚未连接');
+  if (state.qrUrl) { URL.revokeObjectURL(state.qrUrl); state.qrUrl = null; }
+  $('#qr-dialog').close();
+  const url = new URL(location.href); url.hash = ''; history.replaceState(null, '', url);
+}
+async function roomAction(action) {
+  if (state.roomBusy || state.room) return;
+  state.roomBusy = true; error(); controls();
+  try {
+    if (!window.RTCPeerConnection || !globalThis.crypto?.getRandomValues) throw new Error('此浏览器不支持直连传输，请使用新版 Edge、Chrome 或 Safari。');
+    await action();
+  } catch (e) { if (state.room) { await api(roomPath(state.room), { method: 'DELETE' }).catch(() => {}); cleanup(); } error(e.message); }
+  finally { state.roomBusy = false; controls(); }
+}
+$('#create-room').addEventListener('click', () => roomAction(async () => enter(await (await api('/api/groups', { method: 'POST', data: {}, auth: false })).json())));
+$('#pair-form').addEventListener('submit', event => {
+  event.preventDefault(); const code = $('#pair-code').value.replace(/\s/g, '');
+  roomAction(async () => { if (!/^\d{6}$/.test(code)) throw new Error('请输入 6 位数字配对码。'); await enter(await (await api('/api/pair', { method: 'POST', data: { code }, auth: false })).json()); });
+});
+$('#refresh-pair-code').addEventListener('click', async () => {
+  if (!state.room || state.room.role !== 'host' || state.roomBusy) return;
+  state.roomBusy = true; controls(); error();
+  try { Object.assign(state.room, await (await api(roomPath(state.room) + '/pairing-code', { method: 'POST', data: {} })).json()); renderPairing(); }
+  catch (failure) { error(failure.message); }
+  finally { state.roomBusy = false; controls(); }
+});
+function renderPairing() {
+  if (!state.room) return;
+  const host = state.room.role === 'host'; $('#pairing-panel').hidden = !host;
+  if (!host) return;
+  const used = !state.room.group && state.room.pairingUsed, remaining = Math.max(0, Math.ceil((state.room.pairingExpiresAt - Date.now()) / 1000));
+  $('#pairing-code').hidden = used || !remaining || !state.room.pairingCode;
+  $('#pairing-code').textContent = state.room.pairingCode?.replace(/^(\d{3})(\d{3})$/, '$1 $2') || '';
+  $('#pairing-status').textContent = used ? '已有设备加入，配对码已失效。' : remaining && state.room.pairingCode ? '有效期 ' + Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0') + (state.room.group ? ' · 可供多台设备加入' : ' · 仅可配对一次') : '配对码已过期，请获取新配对码。';
+  $('#refresh-pair-code').hidden = used || !!remaining;
+}
+async function joinInvite(value) {
+  let id, group;
+  try { const url = new URL(value), params = new URLSearchParams(url.hash.slice(1)); group = params.has('group'); id = params.get(group ? 'group' : 'room'); if (url.origin !== location.origin || url.pathname !== appBaseURL().pathname || !/^[A-Za-z0-9_-]{32}$/.test(id)) throw new Error(); }
+  catch { throw new Error('请使用本站生成的完整房间链接。'); }
+  await enter(await (await api('/api/' + (group ? 'groups' : 'rooms') + '/' + id + '/join', { method: 'POST', data: {}, auth: false })).json());
+}
+$('#join-form').addEventListener('submit', event => { event.preventDefault(); roomAction(() => joinInvite($('#join-link').value.trim())); });
+$('#leave-room').addEventListener('click', async () => {
+  const leaving = state.room; if (!leaving) return;
+  try { await api(roomPath(leaving), { method: 'DELETE' }); }
+  catch (e) { if (state.room === leaving) error(e.message); return; }
+  // The server's closed event may already have cleaned up this room.
+  if (state.room === leaving) cleanup();
+});
+$('#reconnect').addEventListener('click', () => state.link?.reconnect(true));
+function updateExpiry() {
+  if (!state.room) return;
+  renderPairing();
+  const seconds = Math.max(0, Math.ceil((state.room.expiresAt - Date.now()) / 1000));
+  $('#room-expiry').textContent = '房间剩余 ' + Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+}
+setInterval(updateExpiry, 1000);
+async function copyText(text, button) {
+  try { await navigator.clipboard.writeText(text); const original = button.textContent; button.textContent = '已复制'; setTimeout(() => { button.textContent = original; }, 1500); }
+  catch { $('#copy-dialog textarea').value = text; $('#copy-dialog').showModal(); $('#copy-dialog textarea').focus(); $('#copy-dialog textarea').select(); }
+}
+$('#copy-link').addEventListener('click', () => copyText($('#invite-link').value, $('#copy-link')));
+$('#show-qr').addEventListener('click', async () => {
+  if (!state.room) return;
+  try { const response = await api(roomPath(state.room) + '/qr.svg'); const blob = await response.blob(); if (state.qrUrl) URL.revokeObjectURL(state.qrUrl); state.qrUrl = URL.createObjectURL(blob); $('#qr-image').src = state.qrUrl; $('#qr-dialog').showModal(); }
+  catch (e) { error(e.message); }
+});
+$('#qr-dialog button').addEventListener('click', () => $('#qr-dialog').close()); $('#copy-dialog button').addEventListener('click', () => $('#copy-dialog').close());
+window.addEventListener('beforeunload', event => { if (state.busy || state.session?.incoming) { event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('pagehide', () => {
+  state.link?.dispose(); state.session?.dispose();
+  for (const url of state.urls.values()) URL.revokeObjectURL(url); store.dispose().catch(() => {});
+});
+window.addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
+$('#text-draft').value = ''; $('#files').value = ''; controls();
+const inviteParams = new URLSearchParams(location.hash.slice(1)), inviteRoom = inviteParams.get('group') || inviteParams.get('room');
+let savedRoom;
+try { const saved = JSON.parse(sessionStorage.getItem(ROOM_CACHE)); if (saved?.resumeId === history.state?.rereResume && saved?.room?.roomId === inviteRoom && saved.room.expiresAt > Date.now()) savedRoom = saved.room; } catch {}
+if (savedRoom) roomAction(async () => {
+  state.room = savedRoom;
+  try { const restored = await (await api(roomPath(savedRoom) + '/resume', { method: 'POST', data: {} })).json(); state.room = null; await enter(restored); }
+  catch (failure) { const invite = location.href; state.room = null; cleanup(); if (failure.status === 401 && savedRoom.role === 'guest') await joinInvite(invite); else throw failure; }
+});
+else if (inviteRoom) roomAction(() => joinInvite(location.href));
+window.addEventListener('hashchange', () => {
+  const params = new URLSearchParams(location.hash.slice(1)), id = params.get('group') || params.get('room');
+  if (!id) return;
+  if (!state.room) roomAction(() => joinInvite(location.href));
+  else if (state.room.roomId !== id) error('请先退出当前房间，再加入新的房间。');
+});
