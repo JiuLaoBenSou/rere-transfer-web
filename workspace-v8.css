@@ -36,7 +36,7 @@ body.has-room .connect-bar{gap:10px}body.has-room .connection-state{font-size:12
 body .inbox-header,body[data-theme=ember] .inbox-header{padding:0 0 10px;min-height:0}body .inbox-empty,body[data-theme=ember] .inbox-empty{min-height:110px}
 @media(max-width:760px){
  body .workspace,body[data-theme=ember] .workspace{grid-template-columns:minmax(0,1fr);gap:18px}
- body #text-panel{grid-column:1;grid-row:1;position:static;padding:18px}body .send-pane{grid-column:1;grid-row:2}body .inbox-pane,body[data-theme=ember] .inbox-pane{grid-row:3;padding:18px}
+ body #text-panel{grid-column:1;grid-row:1;position:static;padding:18px}body .send-pane,body[data-theme=ember] .send-pane{grid-column:1;grid-row:2}body .inbox-pane,body[data-theme=ember] .inbox-pane{grid-row:3;padding:18px}
  body .chat-window{height:230px}body .panel-body,body[data-theme=ember] .panel-body{padding:18px}.section-heading{padding:16px 18px}
  body.has-room .intro,body[data-theme=ember].has-room .intro{padding:18px 0}body.has-room .intro h1,body[data-theme=ember].has-room .intro h1{font-size:24px}
  body.has-room .intro h1>span{display:inline}body.has-room .transfer-mark{display:none!important}
