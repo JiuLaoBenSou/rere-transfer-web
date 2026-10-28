@@ -1,8 +1,8 @@
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
 import { TransferSession, MAX_FILE } from './transfer.js';
 import { ReceiverStore } from './receiver-store.js';
-import { RoomLink } from './room-link.js';
-import { GroupLink } from './group-link.js?v=0.8.1';
+import { RoomLink } from './room-link.js?v=0.8.1-lan2';
+import { GroupLink } from './group-link.js?v=0.8.1-lan2';
 import { RoomTransfers } from './room-transfers.js';
 import { createTransferMark } from './transfer-mark.js';
 import { apiURL, inviteURL, readInvite } from './app-config.js';
@@ -346,12 +346,13 @@ $('#leave-room').addEventListener('click', async () => {
   if (state.room === leaving) cleanup();
 });
 $('#reconnect').addEventListener('click', () => state.link?.reconnect(true));
-$('#copy-diagnostics').addEventListener('click', () => {
-  const peers = (state.link?.members || []).map(peer => {
+$('#copy-diagnostics').addEventListener('click', async () => {
+  const peers = await Promise.all((state.link?.members || []).map(async peer => {
     const edge = state.link?.edges.get(peer.peerId), d = edge?.diagnostics || {};
-    return { name:peer.label, kind:peer.kind, online:peer.online, connected:!!edge?.connected, blocked:!!edge?.blocked, stage:edge?.pc?.signalingState || 'none', ice:d.ice || 'unknown', gathering:d.gathering || 'unknown', localCandidates:d.local ?? 0, remoteCandidates:d.remote ?? 0, error:edge?.lastError || '' };
-  });
-  const report = { version:'0.8.1', browser:navigator.userAgent, secureContext:isSecureContext, rtcAvailable:typeof RTCPeerConnection==='function', status:$('#connection-label').textContent, signaling:state.link?.ws?.readyState ?? null, kind:state.room?.kind, peers };
+    const connectivity=await Promise.race([edge?.inspectConnectivity?.()||Promise.resolve({supported:false}),new Promise(resolve=>setTimeout(()=>resolve({supported:false}),1500))]);
+    return { name:peer.label, kind:peer.kind, online:peer.online, connected:!!edge?.connected, blocked:!!edge?.blocked, stage:edge?.pc?.signalingState || 'none', ice:d.ice || 'unknown', gathering:d.gathering || 'unknown', localCandidates:d.local ?? 0, remoteCandidates:d.remote ?? 0, remoteApplied:d.remoteApplied||0,generation:d.generation,localRoutes:d.localRoutes||{},remoteRoutes:d.remoteRoutes||{},candidateErrors:d.candidateErrors||[],connectivity,error:edge?.lastError || '' };
+  }));
+  const report = { version:'0.8.1',diagnosticSchema:2, browser:navigator.userAgent, secureContext:isSecureContext, rtcAvailable:typeof RTCPeerConnection==='function', status:$('#connection-label').textContent, signaling:state.link?.ws?.readyState ?? null, kind:state.room?.kind, peers };
   copyText(JSON.stringify(report,null,2), $('#copy-diagnostics'));
 });
 function updateExpiry() {

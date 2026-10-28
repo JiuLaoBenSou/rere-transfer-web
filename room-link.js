@@ -1,14 +1,29 @@
 // Codex / 2026-10-25. Signaling is separate from file traffic; host owns negotiation.
 import { apiURL } from './app-config.js';
 const NEGOTIATION_WAIT = 30000;
+// Only classifications leave this module in diagnostics, never candidate addresses.
+export function candidateSummary(value){
+ const raw=typeof value==='string'?value:value?.candidate;if(!raw)return null;const words=raw.trim().split(/\s+/),address=words[4]?.toLowerCase()||'';
+ const type=raw.match(/\btyp (host|srflx|prflx|relay)\b/)?.[1]||'unknown';let addressKind='unknown';
+ if(address.endsWith('.local'))addressKind='mdns';
+ else if(/^\d+\.\d+\.\d+\.\d+$/.test(address)){const n=address.split('.').map(Number);if(n.every(v=>v>=0&&v<=255))addressKind=n[0]===10||n[0]===127||n[0]===192&&n[1]===168||n[0]===172&&n[1]>=16&&n[1]<=31||n[0]===169&&n[1]===254?'private-ipv4':'public-ipv4';}
+ else if(address.includes(':'))addressKind=/^fe[89ab]/.test(address)?'link-local-ipv6':/^f[cd]/.test(address)?'private-ipv6':'ipv6';
+ return{type,protocol:['udp','tcp'].includes(words[2]?.toLowerCase())?words[2].toLowerCase():'unknown',addressKind,tcpType:raw.match(/\btcptype (active|passive|so)\b/)?.[1]||'none'};
+}
+export function iceStatsSummary(stats){
+ const out={pairs:{},requestsSent:0,responsesReceived:0,bytesSent:0,bytesReceived:0};
+ stats.forEach(value=>{if(value.type!=='candidate-pair')return;const state=['frozen','waiting','in-progress','failed','succeeded'].includes(value.state)?value.state:'unknown';out.pairs[state]=(out.pairs[state]||0)+1;for(const field of ['requestsSent','responsesReceived','bytesSent','bytesReceived'])if(Number.isFinite(value[field])&&value[field]>=0)out[field]+=value[field];});return out;
+}
 export class RoomLink {
   constructor(room, hooks = {}) {
     this.room = room; this.hooks = hooks; this.abort = new AbortController();
     this.generation = room.generation || 0; this.pendingIce = []; this.peer = room.role === 'guest' || room.peerPresent; this.lastAttempt = 0;
     this.attempts = 0; this.localCandidates = 0; this.remoteCandidates = 0;
+    this.negotiationStartedAt = null;
     this.listen();
     this.tick = setInterval(() => {
       if (Date.now() >= room.expiresAt) return this.end('房间已过期，请重新创建。');
+      if(this.peer&&!this.blocked&&!this.connected&&Number.isFinite(this.negotiationStartedAt)&&Date.now()-this.negotiationStartedAt>=90000){this.blocked=true;clearTimeout(this.retryTimer);this.hooks.onBlocked?.('设备间连接检查未通过，已停止自动重试。可复制连接诊断查看原因，再手动重新连接。');return;}
       if (this.peer && !this.blocked && !this.connected && Date.now() - this.lastAttempt >= NEGOTIATION_WAIT) {
         if (this.attempts >= 3) { this.blocked = true; this.hooks.onBlocked?.('暂时无法直连。请检查双方网络及浏览器的本地网络权限，再点「重新连接」。'); return; }
         if (this.lastAttempt) this.hooks.onRetryError?.('尚未建立直连。请确认双方在同一网络并保持页面打开；访客网络、网络隔离或浏览器限制可能阻止连接。');
@@ -99,16 +114,19 @@ export class RoomLink {
     }
   }
   makePeer(generation) {
+    this.negotiationStartedAt ??= Date.now();
     this.generation = generation; this.pendingIce = this.earlyIce?.get(generation) || []; this.described = false; this.localIce = [];
     for (const key of this.earlyIce?.keys() || []) if (key <= generation) this.earlyIce.delete(key);
     this.localCandidates = 0; this.remoteCandidates = this.pendingIce.length;
+    this.localRouteCounts={};this.remoteRouteCounts={};this.remoteApplied=0;this.candidateErrors=[];
+    for(const value of this.pendingIce)this.recordCandidate('remote',value);
     const old = this.pc; this.pc = null; old?.close();
     const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }] }); this.pc = pc; this.channel = null; this.chatChannel = null;
     pc.onicecandidate = event => {
       if (this.pc !== pc) return;
-      if (!event.candidate) { this.hooks.onDiagnostics?.({ local: this.localCandidates, remote: this.remoteCandidates, gathering: 'complete', ice: pc.iceConnectionState }); return; }
+      if (!event.candidate) { this.emitIceDiagnostics(pc); return; }
       this.localCandidates++;
-      this.hooks.onDiagnostics?.({ local: this.localCandidates, remote: this.remoteCandidates, gathering: pc.iceGatheringState, ice: pc.iceConnectionState });
+      this.recordCandidate('local',event.candidate);this.emitIceDiagnostics(pc);
       if (!this.described) this.localIce.push(event.candidate.toJSON());
       else this.signal('ice', event.candidate.toJSON(), generation).catch(error => this.hooks.onRetryError?.(error.message));
     };
@@ -121,13 +139,18 @@ export class RoomLink {
         this.disconnectTimer = setTimeout(() => { if (this.pc === pc && pc.connectionState === 'disconnected') { pc.close(); this.pause(); } }, 2000);
       }
     };
-    pc.oniceconnectionstatechange = () => { if (this.pc === pc) this.hooks.onDiagnostics?.({ local: this.localCandidates, remote: this.remoteCandidates, gathering: pc.iceGatheringState, ice: pc.iceConnectionState }); };
+    pc.onicecandidateerror=event=>{if(this.pc!==pc)return;const code=Number.isInteger(event.errorCode)?event.errorCode:0;if(!this.candidateErrors.includes(code))this.candidateErrors.push(code);this.emitIceDiagnostics(pc);};
+    pc.oniceconnectionstatechange = () => this.emitIceDiagnostics(pc);
     this.hooks.onConnecting?.(); return pc;
   }
+  recordCandidate(side,value){const summary=candidateSummary(value);if(!summary)return;const counts=side==='local'?this.localRouteCounts:this.remoteRouteCounts;if(!counts)return;const key=[summary.type,summary.protocol,summary.addressKind,summary.tcpType].join('/');counts[key]=(counts[key]||0)+1;}
+  emitIceDiagnostics(pc){if(this.pc!==pc)return;this.hooks.onDiagnostics?.({local:this.localCandidates,remote:this.remoteCandidates,gathering:pc.iceGatheringState,ice:pc.iceConnectionState,generation:this.generation,remoteApplied:this.remoteApplied||0,localRoutes:{...this.localRouteCounts},remoteRoutes:{...this.remoteRouteCounts},candidateErrors:[...(this.candidateErrors||[])]});}
+  async inspectConnectivity(){const pc=this.pc;if(!pc?.getStats)return{supported:false};try{const stats=await pc.getStats();if(this.pc!==pc)return{supported:false};return{supported:true,...iceStatsSummary(stats)};}catch{return{supported:false};}}
+  async applyRemoteCandidate(pc,value){await pc.addIceCandidate(value);if(this.pc===pc){this.remoteApplied=(this.remoteApplied||0)+1;this.emitIceDiagnostics(pc);}}
   attach(channel, pc) {
     this.channel = channel; this.hooks.onChannel?.(channel);
     let opened = false;
-    const open = () => { if (!opened && this.pc === pc) { opened = true; this.attempts = 0; this.blocked = false; this.hooks.onConnected?.(); } };
+    const open = () => { if (!opened && this.pc === pc) { opened = true; this.attempts = 0; this.blocked = false; this.negotiationStartedAt=null; this.hooks.onConnected?.(); } };
     channel.addEventListener('open', open);
     if (channel.readyState === 'open') open();
     channel.addEventListener('close', () => { if (this.pc === pc && !this.abort.signal.aborted) this.pause(); });
@@ -150,14 +173,15 @@ export class RoomLink {
     this.described = true;
     for (const candidate of this.localIce.splice(0)) await this.signal('ice', candidate, generation);
   }
-  async reconnect(force = false) {
+  async reconnect(force = false, remote = false) {
     if (this.abort.signal.aborted || (this.connected && !force) || this.negotiating || !this.peer) return;
-    if (force) { this.blocked = false; this.attempts = 0; }
+    if (force && !remote) { this.blocked = false; this.attempts = 0; this.negotiationStartedAt = null; }
     if (this.blocked) return;
     // Late signaling and socket reconnects must not discard an offer still in flight.
     const pending = !['connected', 'failed', 'closed'].includes(this.pc?.connectionState);
     if (!force && pending && this.lastAttempt && Date.now() - this.lastAttempt < NEGOTIATION_WAIT) return;
     this.lastAttempt = Date.now(); this.negotiating = true; this.attempts++;
+    this.negotiationStartedAt ??= Date.now();
     try {
       if (this.room.role === 'host') {
         const generation = this.generation + 1, pc = this.makePeer(generation);
@@ -172,11 +196,11 @@ export class RoomLink {
   async handle(message) {
     if (message.type === 'closed') return this.end(message.reason === 'expired' ? '房间已过期，请重新创建。' : '房间已结束，请重新创建。');
     if (['peer', 'peer-returned'].includes(message.type)) {
-      if (message.type === 'peer-returned' || !this.peer) { this.blocked = false; this.attempts = 0; }
+      if (message.type === 'peer-returned' || !this.peer) { this.blocked = false; this.attempts = 0; this.negotiationStartedAt=null; }
       this.peer = true; if (!this.connected) await this.reconnect(); return;
     }
     if (message.type === 'peer-left') { this.peer = false; const pc = this.pc; this.pc = null; pc?.close(); this.channel = null; this.hooks.onPeerLeft?.(); return; }
-    if (message.type === 'restart') { if (this.room.role === 'host' && message.generation >= this.generation) await this.reconnect(true); return; }
+    if (message.type === 'restart') { if (this.room.role === 'host' && message.generation >= this.generation) await this.reconnect(true,true); return; }
     const generation = message.generation;
     if (!Number.isSafeInteger(generation) || generation < this.generation) return;
     if (message.type === 'ice' && (!this.pc || generation > this.generation)) {
@@ -185,20 +209,20 @@ export class RoomLink {
       while (this.earlyIce.size > 3) this.earlyIce.delete(this.earlyIce.keys().next().value); return;
     }
     if (message.type === 'offer' && this.room.role === 'guest') {
-      this.blocked = false;
+      if(this.blocked)return;
       if (generation === this.generation && this.pc?.remoteDescription?.type === 'offer' && this.pc.localDescription?.type === 'answer') { await this.describedSignal('answer', this.pc, generation); return; }
       const pc = this.makePeer(generation); this.lastAttempt = Date.now();
-      await pc.setRemoteDescription(message.data); for (const candidate of this.pendingIce.splice(0)) await pc.addIceCandidate(candidate); await pc.setLocalDescription(await pc.createAnswer());
+      await pc.setRemoteDescription(message.data); for (const candidate of this.pendingIce.splice(0)) await this.applyRemoteCandidate(pc,candidate); await pc.setLocalDescription(await pc.createAnswer());
       await this.describedSignal('answer', pc, generation); return;
     }
     if (generation !== this.generation || !this.pc) return;
     if (message.type === 'answer' && this.room.role === 'host') {
       await this.pc.setRemoteDescription(message.data);
-      for (const candidate of this.pendingIce.splice(0)) await this.pc.addIceCandidate(candidate);
+      for (const candidate of this.pendingIce.splice(0)) await this.applyRemoteCandidate(this.pc,candidate);
     } else if (message.type === 'ice') {
       this.remoteCandidates++;
-      this.hooks.onDiagnostics?.({ local: this.localCandidates, remote: this.remoteCandidates, gathering: this.pc.iceGatheringState, ice: this.pc.iceConnectionState });
-      if (this.pc.remoteDescription) await this.pc.addIceCandidate(message.data); else this.pendingIce.push(message.data);
+      this.recordCandidate('remote',message.data);this.emitIceDiagnostics(this.pc);
+      if (this.pc.remoteDescription) await this.applyRemoteCandidate(this.pc,message.data); else this.pendingIce.push(message.data);
     }
   }
   end(reason) { if (this.abort.signal.aborted) return; this.dispose(); this.hooks.onEnded?.(reason); }
