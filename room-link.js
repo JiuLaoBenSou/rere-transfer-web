@@ -1,6 +1,8 @@
 // Codex / 2026-10-25. Signaling is separate from file traffic; host owns negotiation.
 import { apiURL } from './app-config.js';
 const NEGOTIATION_WAIT = 30000;
+// ufrag is included on candidate events but may be omitted from SDP candidate lines.
+const candidateKey = value => value.replace(/\s+ufrag\s+\S+/g,'').trim();
 // Only classifications leave this module in diagnostics, never candidate addresses.
 export function candidateSummary(value){
  const raw=typeof value==='string'?value:value?.candidate;if(!raw)return null;const words=raw.trim().split(/\s+/),address=words[4]?.toLowerCase()||'';
@@ -114,6 +116,8 @@ export class RoomLink {
     }
   }
   makePeer(generation) {
+    this.cancelGathering?.();
+    this.exchangeMode = generation > 1 || this.room?.exchangeMode === 'complete' ? 'complete' : 'trickle';
     this.negotiationStartedAt ??= Date.now();
     this.generation = generation; this.pendingIce = this.earlyIce?.get(generation) || []; this.described = false; this.localIce = [];
     for (const key of this.earlyIce?.keys() || []) if (key <= generation) this.earlyIce.delete(key);
@@ -168,10 +172,32 @@ export class RoomLink {
     this.retryTimer = setTimeout(() => this.reconnect(), 500);
   }
   async describedSignal(type, pc, generation) {
-    await this.signal(type, pc.localDescription.toJSON(), generation);
+    if(this.exchangeMode === 'complete') await this.waitForGathering(pc);
+    if(this.pc !== pc || this.abort.signal.aborted) return;
+    const description=pc.localDescription.toJSON();
+    const included=new Set(description.sdp.split(/\r?\n/).filter(line=>line.startsWith('a=candidate:')).map(line=>candidateKey(line.slice(2))));
+    await this.signal(type, description, generation);
     if (this.pc !== pc) return;
     this.described = true;
-    for (const candidate of this.localIce.splice(0)) await this.signal('ice', candidate, generation);
+    for (const candidate of this.localIce.splice(0)) {
+      if(this.pc !== pc || this.abort.signal.aborted) return;
+      if(!included.has(candidateKey(candidate.candidate))) await this.signal('ice', candidate, generation);
+    }
+  }
+  waitForGathering(pc) {
+    if(pc.iceGatheringState === 'complete' || this.pc !== pc || this.abort.signal.aborted) return Promise.resolve();
+    return new Promise(resolve=>{
+      const done=()=>{clearTimeout(timer);pc.removeEventListener('icegatheringstatechange',changed);this.abort.signal.removeEventListener('abort',done);if(this.cancelGathering===done)this.cancelGathering=null;resolve();};
+      const changed=()=>{if(pc.iceGatheringState==='complete'||pc.connectionState==='closed')done();};
+      // A STUN timeout must not block room signaling or other peers indefinitely.
+      const timer=setTimeout(done,5000);this.cancelGathering=done;
+      pc.addEventListener('icegatheringstatechange',changed);this.abort.signal.addEventListener('abort',done,{once:true});changed();
+    });
+  }
+  recordDescription(pc,description){
+    if(this.pc!==pc)return;
+    for(const line of description.sdp.split(/\r?\n/))if(line.startsWith('a=candidate:')){this.remoteCandidates++;this.remoteApplied++;this.recordCandidate('remote',{candidate:line.slice(2)});}
+    this.emitIceDiagnostics(pc);
   }
   async reconnect(force = false, remote = false) {
     if (this.abort.signal.aborted || (this.connected && !force) || this.negotiating || !this.peer) return;
@@ -212,12 +238,13 @@ export class RoomLink {
       if(this.blocked)return;
       if (generation === this.generation && this.pc?.remoteDescription?.type === 'offer' && this.pc.localDescription?.type === 'answer') { await this.describedSignal('answer', this.pc, generation); return; }
       const pc = this.makePeer(generation); this.lastAttempt = Date.now();
-      await pc.setRemoteDescription(message.data); for (const candidate of this.pendingIce.splice(0)) await this.applyRemoteCandidate(pc,candidate); await pc.setLocalDescription(await pc.createAnswer());
+      await pc.setRemoteDescription(message.data); this.recordDescription(pc,message.data); for (const candidate of this.pendingIce.splice(0)) await this.applyRemoteCandidate(pc,candidate); await pc.setLocalDescription(await pc.createAnswer());
       await this.describedSignal('answer', pc, generation); return;
     }
     if (generation !== this.generation || !this.pc) return;
     if (message.type === 'answer' && this.room.role === 'host') {
       await this.pc.setRemoteDescription(message.data);
+      this.recordDescription(this.pc,message.data);
       for (const candidate of this.pendingIce.splice(0)) await this.applyRemoteCandidate(this.pc,candidate);
     } else if (message.type === 'ice') {
       this.remoteCandidates++;
@@ -227,6 +254,7 @@ export class RoomLink {
   }
   end(reason) { if (this.abort.signal.aborted) return; this.dispose(); this.hooks.onEnded?.(reason); }
   dispose() {
+    this.cancelGathering?.();
     this.abort.abort(); clearInterval(this.tick); clearTimeout(this.retryTimer); clearTimeout(this.disconnectTimer);
     const ws = this.ws; this.ws = null; ws?.close();
     const pc = this.pc; this.pc = null; pc?.close(); this.channel = null;

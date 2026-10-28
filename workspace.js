@@ -1,8 +1,8 @@
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
 import { TransferSession, MAX_FILE } from './transfer.js';
 import { ReceiverStore } from './receiver-store.js';
-import { RoomLink } from './room-link.js?v=0.8.1-lan2';
-import { GroupLink } from './group-link.js?v=0.8.1-lan2';
+import { RoomLink } from './room-link.js?v=0.8.1-lan4';
+import { GroupLink } from './group-link.js?v=0.8.1-lan4';
 import { RoomTransfers } from './room-transfers.js';
 import { createTransferMark } from './transfer-mark.js';
 import { apiURL, inviteURL, readInvite } from './app-config.js';
