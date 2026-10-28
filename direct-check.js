@@ -1,12 +1,12 @@
 // Codex / 2026-10-29. Separate simple-peer transport; production page stays unchanged.
 import {apiURL} from './app-config.js';
-import {DirectProbe,peerOptions,signalEnvelope,summarizeStats,MAX_PROBE_FILE} from './direct-probe-core.js';
+import {DirectProbe,peerOptions,signalEnvelope,ProbeEvidence,observedRTC,localNetworkPermission,MAX_PROBE_FILE} from './direct-probe-core.js?v=reference2';
 import {drawQR} from './vendor/reference/qr.js';
 import './vendor/reference/simplepeer-9.11.1.min.js';
 const $=s=>document.querySelector(s),modes=['standard','complete','lan'];
 let mode=new URL(location.href).searchParams.get('mode')||'standard';if(!modes.includes(mode))mode='standard';$('#mode').value=mode;
 let room=null,target=null,peer=null,transfer=null,ws=null,controller=null,busy=false,peerTimer,heartbeat,statsTimer;
-let signaling=Promise.resolve(),messages=Promise.resolve(),lastStats={},ice='new',gathering='new',failure='',sent=0,received=0;
+let signaling=Promise.resolve(),messages=Promise.resolve(),evidence=new ProbeEvidence(),ice='new',gathering='new',failure='',sent=0,received=0;
 let signalCounts={sent:{},received:{}};
 const downloads=[];
 const error=message=>{$('#error').textContent=message||'';};
@@ -19,25 +19,26 @@ async function api(path,body,token,method='POST'){
 }
 function text(message,own=false){const p=document.createElement('p');p.textContent=(own?'我：':'对方：')+message;$('#messages').append(p);while($('#messages').children.length>40)$('#messages').firstElementChild.remove();$('#messages').scrollTop=$('#messages').scrollHeight;}
 async function statistics(){
- const current=peer;if(!current||current.destroyed)return lastStats;
+ const current=peer,record=evidence;if(!current||current.destroyed)return record.snapshot().latest;
+ const ticket=record.begin(),sampleIce=ice;
  const values=await new Promise(resolve=>{const timer=setTimeout(()=>resolve(null),1500);current.getStats((err,items)=>{clearTimeout(timer);resolve(err?null:items);});});
- if(values&&peer===current)lastStats=summarizeStats(values);return lastStats;
+ if(peer===current&&record===evidence)record.sample(ticket,values,sampleIce);return record.snapshot().latest;
 }
 async function diagnostic(){
- await statistics();const value={build:'reference1',engine:'simple-peer@9.11.1',mode,browser:navigator.userAgent,secureContext:isSecureContext,status:$('#status').textContent,ice,gathering,error:failure,signals:signalCounts,stats:lastStats,filesSent:sent,filesReceived:received};
+ await statistics();await evidence.flush();const history=evidence.snapshot();const value={build:'reference2',engine:'simple-peer@9.11.1',mode,browser:navigator.userAgent,secureContext:isSecureContext,localNetworkPermission:await localNetworkPermission(),status:$('#status').textContent,ice,gathering,error:failure,signals:signalCounts,stats:history.latest,evidence:history,filesSent:sent,filesReceived:received};
  $('#diagnostic').value=JSON.stringify(value,null,2);return $('#diagnostic').value;
 }
 function closePeer(){clearTimeout(peerTimer);clearInterval(statsTimer);transfer?.dispose();transfer=null;const old=peer;peer=null;old?.destroy();controls();}
 function stop(message){controller?.abort();controller=null;clearInterval(heartbeat);ws?.close();ws=null;closePeer();status(message);}
 function connectPeer(member){
- target=member;const current=new globalThis.SimplePeer(peerOptions(room.peerId<member.peerId,mode));peer=current;failure='';lastStats={};ice='new';gathering='new';signalCounts={sent:{},received:{}};status('正在建立连接…');
- statsTimer=setInterval(()=>statistics(),3000);
+ target=member;evidence=new ProbeEvidence();const record=evidence;const current=new globalThis.SimplePeer({...peerOptions(room.peerId<member.peerId,mode),wrtc:observedRTC(globalThis,record)});peer=current;failure='';ice='new';gathering='new';signalCounts={sent:{},received:{}};status('正在建立连接…');
+ statsTimer=setInterval(()=>statistics(),1000);
  transfer=new DirectProbe({send:value=>current.send(value),drain:async()=>{const started=Date.now();while(current.bufferSize>256*1024){if(current.destroyed||peer!==current||Date.now()-started>15000)throw new Error('发送连接已中断。');await new Promise(r=>setTimeout(r,20));}},onText:value=>text(value),onFile:file=>{
    const url=URL.createObjectURL(file.blob),a=document.createElement('a');a.href=url;a.download=file.name;a.textContent='保存 '+file.name+' · 校验一致';$('#received').append(a);downloads.push({url,release:file.release});received++;
  },onSent:()=>{sent++;$('#file-status').textContent='对方已接收并校验。';},onError:error});
  const session=transfer;
  current.on('signal',signal=>{
-   signaling=signaling.then(async()=>{if(peer!==current)return;const envelope=signalEnvelope(signal);await api('/api/groups/'+room.roomId+'/signal',{...envelope,generation:1,to:member.peerId,fromEpoch:room.epoch,toEpoch:member.epoch},room.token);signalCounts.sent[envelope.type]=(signalCounts.sent[envelope.type]||0)+1;}).catch(()=>{failure='SIGNAL_REQUEST_FAILED';error('协商消息未送达，请重新创建验证房间。');});
+   signaling=signaling.then(async()=>{if(peer!==current)return;const envelope=signalEnvelope(signal);record.description('sent',signal);await api('/api/groups/'+room.roomId+'/signal',{...envelope,generation:1,to:member.peerId,fromEpoch:room.epoch,toEpoch:member.epoch},room.token);signalCounts.sent[envelope.type]=(signalCounts.sent[envelope.type]||0)+1;}).catch(()=>{failure='SIGNAL_REQUEST_FAILED';error('协商消息未送达，请重新创建验证房间。');});
  });
  current.on('connect',()=>{if(peer!==current)return;clearTimeout(peerTimer);status('已连接，可以互传');statistics();});
  current.on('data',value=>session.receive(value));
@@ -63,7 +64,7 @@ async function handle(message){
  if(!peer||!target||message.from!==target.peerId||message.fromEpoch!==target.epoch||message.toEpoch!==room.epoch||message.generation!==1)return;
  if(['ice','offer','answer'].includes(message.type))signalCounts.received[message.type]=(signalCounts.received[message.type]||0)+1;
  if(message.type==='ice')peer.signal({candidate:message.data});
- else if(['offer','answer'].includes(message.type))peer.signal(message.data);
+ else if(['offer','answer'].includes(message.type)){evidence.description('received',message.data);peer.signal(message.data);}
 }
 function enqueue(message){messages=messages.then(()=>handle(message)).catch(()=>{failure='SIGNAL_APPLY_FAILED';error('本次连接协商失败，请重新创建验证房间。');});}
 async function listen(){

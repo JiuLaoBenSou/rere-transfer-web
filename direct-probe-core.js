@@ -15,7 +15,88 @@ export function summarizeStats(items) {
   const id=items.find(x=>x.type==='transport'&&x.selectedCandidatePairId)?.selectedCandidatePairId;
   const pair=map.get(id)||pairs.find(x=>x.selected||(x.nominated&&x.state==='succeeded'));
   const route=id=>{const x=map.get(id);return x?`${x.candidateType||'unknown'}/${x.protocol||'unknown'}`:'unknown';};
-  return{pairs:pairs.reduce((r,x)=>(r[x.state]=(r[x.state]||0)+1,r),{}),requestsSent:pairs.reduce((n,x)=>n+(x.requestsSent||0),0),responsesReceived:pairs.reduce((n,x)=>n+(x.responsesReceived||0),0),selected:pair?{local:route(pair.localCandidateId),remote:route(pair.remoteCandidateId),bytesSent:pair.bytesSent||0,bytesReceived:pair.bytesReceived||0}:null};
+  // Missing reports/counters are unknown, not proof of zero traffic.
+  const total=key=>pairs.length&&pairs.every(x=>Number.isFinite(x[key]))?pairs.reduce((n,x)=>n+x[key],0):null;
+  return{pairs:pairs.reduce((r,x)=>(r[x.state]=(r[x.state]||0)+1,r),{}),requestsSent:total('requestsSent'),responsesReceived:total('responsesReceived'),selected:pair?{local:route(pair.localCandidateId),remote:route(pair.remoteCandidateId),bytesSent:pair.bytesSent??null,bytesReceived:pair.bytesReceived??null}:null};
+}
+
+function candidateRoute(candidate='') {
+  const fields=candidate.replace(/^a=/,'').trim().split(/\s+/),address=fields[4]||'';
+  const type=['host','srflx','prflx','relay'].includes(fields[7])?fields[7]:'unknown';
+  const protocol=['udp','tcp'].includes(fields[2]?.toLowerCase())?fields[2].toLowerCase():'unknown';
+  const privateV4=/^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(address);
+  const space=address.endsWith('.local')?'mdns':address.includes(':')?'ipv6':/^\d+\.\d+\.\d+\.\d+$/.test(address)?(privateV4?'private-ipv4':'other-ipv4'):'unknown';
+  return `${type}/${protocol}/${space}`;
+}
+const safeError=error=>['OperationError','InvalidStateError','InvalidAccessError','NotSupportedError','NotAllowedError','TypeError'].includes(error?.name)?error.name:'Error';
+
+// A bounded, in-memory journal. No raw addresses, SDP, room tokens or file data.
+export class ProbeEvidence {
+  constructor(clock=()=>performance.now()) {
+    this.clock=clock;this.started=clock();this.sequence=0;this.accepted=0;this.pending=new Set();
+    this.data={latest:null,lastWithPairs:null,samples:[],events:[],operations:{},descriptions:{},localCandidates:{},candidateErrors:[]};
+  }
+  elapsed(){return Math.max(0,Math.round(this.clock()-this.started));}
+  begin(){return {sequence:++this.sequence,atMs:this.elapsed()};}
+  sample(ticket,items,ice){
+    if(ticket.sequence<=this.accepted)return;
+    this.accepted=ticket.sequence;
+    const sample={...ticket,ice,available:Array.isArray(items),...(Array.isArray(items)?summarizeStats(items):{pairs:{},requestsSent:null,responsesReceived:null,selected:null})};
+    this.data.latest=sample;
+    if(Object.keys(sample.pairs).length)this.data.lastWithPairs=sample;
+    this.data.samples.push(sample);if(this.data.samples.length>24)this.data.samples.shift();
+  }
+  event(type,state){this.data.events.push({atMs:this.elapsed(),type,state});if(this.data.events.length>80)this.data.events.shift();}
+  operation(name,phase,error){
+    const count=this.data.operations[name]??={attempted:0,applied:0,failed:0};count[phase]++;
+    this.event(name,phase==='failed'?safeError(error):phase);
+  }
+  description(side,value){
+    if(!value?.sdp)return;
+    const routes={};for(const line of value.sdp.split(/\r?\n/))if(line.startsWith('a=candidate:')){const key=candidateRoute(line);routes[key]=(routes[key]||0)+1;}
+    const summary={type:['offer','answer','pranswer','rollback'].includes(value.type)?value.type:'unknown',atMs:this.elapsed(),routes,hash:null};
+    this.data.descriptions[side]=summary;
+    const pending=digest(new TextEncoder().encode(value.sdp)).then(hash=>{summary.hash=hash;}).catch(()=>{}).finally(()=>this.pending.delete(pending));this.pending.add(pending);
+  }
+  localCandidate(value){if(!value?.candidate)return;const key=candidateRoute(value.candidate);this.data.localCandidates[key]=(this.data.localCandidates[key]||0)+1;}
+  candidateError(code){if(Number.isInteger(code)&&this.data.candidateErrors.length<20)this.data.candidateErrors.push({atMs:this.elapsed(),code});}
+  async flush(){await Promise.allSettled([...this.pending]);}
+  snapshot(){return structuredClone(this.data);}
+}
+
+// Public simple-peer `wrtc` injection: observe native completion without changing
+// SDP, candidates, configuration, error propagation or connection ordering.
+export function observedRTC(native,evidence) {
+  class ObservedConnection extends native.RTCPeerConnection {
+    constructor(...args){
+      super(...args);
+      this.addEventListener('icecandidate',e=>evidence.localCandidate(e.candidate));
+      this.addEventListener('icecandidateerror',e=>evidence.candidateError(e.errorCode));
+      for(const [event,property] of [['iceconnectionstatechange','iceConnectionState'],['icegatheringstatechange','iceGatheringState'],['signalingstatechange','signalingState'],['connectionstatechange','connectionState']])this.addEventListener(event,()=>evidence.event(property,this[property]));
+    }
+    async setLocalDescription(...args){
+      evidence.operation('localDescription','attempted');
+      try{const result=await super.setLocalDescription(...args);evidence.operation('localDescription','applied');evidence.description('local',this.localDescription);return result;}
+      catch(error){evidence.operation('localDescription','failed',error);throw error;}
+    }
+    async setRemoteDescription(...args){
+      evidence.operation('remoteDescription','attempted');
+      try{const result=await super.setRemoteDescription(...args);evidence.operation('remoteDescription','applied');evidence.description('remote',this.remoteDescription);return result;}
+      catch(error){evidence.operation('remoteDescription','failed',error);throw error;}
+    }
+    async addIceCandidate(...args){
+      evidence.operation('candidate','attempted');
+      try{const result=await super.addIceCandidate(...args);evidence.operation('candidate','applied');return result;}
+      catch(error){evidence.operation('candidate','failed',error);throw error;}
+    }
+  }
+  return {RTCPeerConnection:ObservedConnection,RTCSessionDescription:native.RTCSessionDescription,RTCIceCandidate:native.RTCIceCandidate};
+}
+
+export async function localNetworkPermission(permissions=globalThis.navigator?.permissions){
+  // Query only: never requests access or changes settings. Unsupported != denied.
+  try {const result=await permissions.query({name:'local-network'});return ['granted','denied','prompt'].includes(result.state)?result.state:'unknown';}
+  catch{return 'unsupported';}
 }
 export class DirectProbe {
   constructor({send,drain=async()=>{},onText=()=>{},onFile=()=>{},onSent=()=>{},onError=()=>{},ackTimeout=30000}) {
