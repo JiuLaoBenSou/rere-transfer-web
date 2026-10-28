@@ -1,6 +1,7 @@
 // Codex / 2026-10-25. Signaling is separate from file traffic; host owns negotiation.
 import { apiURL } from './app-config.js';
 const NEGOTIATION_WAIT = 30000;
+export const CONNECTION_BUILD = '0.8.1-lan5';
 // ufrag is included on candidate events but may be omitted from SDP candidate lines.
 const candidateKey = value => value.replace(/\s+ufrag\s+\S+/g,'').trim();
 // Only classifications leave this module in diagnostics, never candidate addresses.
@@ -33,7 +34,7 @@ export class RoomLink {
       }
     }, 1000);
   }
-  get connected() { return this.channel?.readyState === 'open'; }
+  get connected() { return this.channel?.readyState === 'open' && this.pc?.iceConnectionState !== 'failed' && this.pc?.connectionState !== 'failed'; }
   async request(action, method = 'GET', data) {
     const response = await fetch(apiURL(`/api/${this.room.group ? 'groups' : 'rooms'}/${this.room.roomId}/${action}`), {
       method, signal: this.abort.signal, headers: { Authorization: `Bearer ${this.room.token}`, 'Content-Type': 'application/json' },
@@ -137,14 +138,17 @@ export class RoomLink {
     pc.ondatachannel = event => { if (this.pc === pc) { if (event.channel.label === 'rere-chat-v1' && this.room.chat) this.attachChat(event.channel, pc); else if (event.channel.label !== 'rere-chat-v1') this.attach(event.channel, pc); else event.channel.close(); } };
     pc.onconnectionstatechange = () => {
       if (this.pc !== pc || this.abort.signal.aborted) return;
-      if (['failed', 'closed'].includes(pc.connectionState)) this.pause();
+      if (['failed', 'closed'].includes(pc.connectionState)) this.recoverFailed(pc);
       if (pc.connectionState === 'disconnected') {
         clearTimeout(this.disconnectTimer);
         this.disconnectTimer = setTimeout(() => { if (this.pc === pc && pc.connectionState === 'disconnected') { pc.close(); this.pause(); } }, 2000);
       }
     };
     pc.onicecandidateerror=event=>{if(this.pc!==pc)return;const code=Number.isInteger(event.errorCode)?event.errorCode:0;if(!this.candidateErrors.includes(code))this.candidateErrors.push(code);this.emitIceDiagnostics(pc);};
-    pc.oniceconnectionstatechange = () => this.emitIceDiagnostics(pc);
+    pc.oniceconnectionstatechange = () => {
+      this.emitIceDiagnostics(pc);
+      if(pc.iceConnectionState==='failed')this.recoverFailed(pc);
+    };
     this.hooks.onConnecting?.(); return pc;
   }
   recordCandidate(side,value){const summary=candidateSummary(value);if(!summary)return;const counts=side==='local'?this.localRouteCounts:this.remoteRouteCounts;if(!counts)return;const key=[summary.type,summary.protocol,summary.addressKind,summary.tcpType].join('/');counts[key]=(counts[key]||0)+1;}
@@ -169,7 +173,15 @@ export class RoomLink {
   }
   pause() {
     this.hooks.onPaused?.(); clearTimeout(this.retryTimer);
-    this.retryTimer = setTimeout(() => this.reconnect(), 500);
+    const failed = !!this.pc && this.failedPeer === this.pc;
+    this.retryTimer = setTimeout(() => this.reconnect(failed,failed), 500);
+  }
+  recoverFailed(pc) {
+    if(this.pc!==pc||this.abort.signal.aborted||this.blocked||this.failedPeer===pc)return;
+    this.failedPeer=pc;this.hooks.onPaused?.();clearTimeout(this.retryTimer);
+    this.retryTimer=setTimeout(()=>{
+      if(this.pc===pc&&!this.abort.signal.aborted)this.reconnect(true,true);
+    },500);
   }
   async describedSignal(type, pc, generation) {
     if(this.exchangeMode === 'complete') await this.waitForGathering(pc);
@@ -203,6 +215,9 @@ export class RoomLink {
     if (this.abort.signal.aborted || (this.connected && !force) || this.negotiating || !this.peer) return;
     if (force && !remote) { this.blocked = false; this.attempts = 0; this.negotiationStartedAt = null; }
     if (this.blocked) return;
+    if(this.attempts>=3||(Number.isFinite(this.negotiationStartedAt)&&Date.now()-this.negotiationStartedAt>=90000)){
+      this.blocked=true;clearTimeout(this.retryTimer);this.hooks.onBlocked?.('未能连接这台设备。可以点「重新连接」再试。');return;
+    }
     // Late signaling and socket reconnects must not discard an offer still in flight.
     const pending = !['connected', 'failed', 'closed'].includes(this.pc?.connectionState);
     if (!force && pending && this.lastAttempt && Date.now() - this.lastAttempt < NEGOTIATION_WAIT) return;

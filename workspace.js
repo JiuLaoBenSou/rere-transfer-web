@@ -1,8 +1,8 @@
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
 import { TransferSession, MAX_FILE } from './transfer.js';
 import { ReceiverStore } from './receiver-store.js';
-import { RoomLink } from './room-link.js?v=0.8.1-lan4';
-import { GroupLink } from './group-link.js?v=0.8.1-lan4';
+import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=0.8.1-lan5';
+import { GroupLink } from './group-link.js?v=0.8.1-lan5';
 import { RoomTransfers } from './room-transfers.js';
 import { createTransferMark } from './transfer-mark.js';
 import { apiURL, inviteURL, readInvite } from './app-config.js';
@@ -220,7 +220,7 @@ function renderDevices(peers = state.link?.members || [], edges = state.link?.ed
     const input = document.createElement('input'); input.type = 'checkbox'; input.checked = targets.has(peer.peerId); input.disabled = state.busy;
     input.setAttribute('aria-label', '文件发给' + peer.label);
     input.addEventListener('change', () => { if (input.checked) targets.add(peer.peerId); else targets.delete(peer.peerId); controls(); });
-    const detail = textElement('span', deviceResults.get(peer.peerId) || (ready ? '已直连' : edge?.blocked ? '未连通 · 可重新连接' : !peer.online ? '暂时离线 · 等待恢复' : '正在直连…'), 'device-status');
+    const detail = textElement('span', deviceResults.get(peer.peerId) || (ready ? '已直连' : edge?.blocked ? '未连通 · 可重新连接' : !peer.online ? '暂时离线 · 等待恢复' : edge?.failedPeer===edge?.pc && edge?.pc ? '连接失败 · 正在重试' : '正在直连…'), 'device-status');
     const remote = state.session?.sessions.get(peer.peerId)?.session.remote;
     if (remote) detail.textContent += ' · 单文件 ' + formatBytes(remote.maxFile);
     label.append(input, textElement('span', peer.label + ' · ' + (peer.kind || '浏览器')), detail); $('#device-list').append(label);
@@ -236,7 +236,8 @@ function renderDevices(peers = state.link?.members || [], edges = state.link?.ed
   }
   const connected = peers.filter(peer => edges.get(peer.peerId)?.connected).length;
   const blocked = peers.length > 0 && peers.every(peer => edges.get(peer.peerId)?.blocked || !peer.online);
-  connection(connected ? '已直连 ' + connected + ' 台设备' : blocked ? '直连未成功' : peers.length ? '正在直连…' : '等待设备加入', connected > 0, !connected && blocked);
+  const retrying = peers.some(peer=>{const edge=edges.get(peer.peerId);return edge?.pc&&edge.failedPeer===edge.pc;});
+  connection(connected ? '已直连 ' + connected + ' 台设备' : blocked ? '直连未成功' : retrying ? '正在重新连接…' : peers.length ? '正在直连…' : '等待设备加入', connected > 0, !connected && blocked);
   $('#connection-detail').textContent = '文件发给勾选设备 · 聊天独立发送给房间所有设备';
   $('#reconnect').disabled = !peers.some(p => { const edge=edges.get(p.peerId); return !edge?.connected || (edge.room.chat && edge.chatChannel?.readyState !== 'open'); });
   if (!connected && peers.length && [...edges.values()].some(edge => edge.blocked)) $('#signal-note').textContent = '部分设备未能直连，请检查网络和浏览器权限，再点「重新连接」。';
@@ -352,7 +353,7 @@ $('#copy-diagnostics').addEventListener('click', async () => {
     const connectivity=await Promise.race([edge?.inspectConnectivity?.()||Promise.resolve({supported:false}),new Promise(resolve=>setTimeout(()=>resolve({supported:false}),1500))]);
     return { name:peer.label, kind:peer.kind, online:peer.online, connected:!!edge?.connected, blocked:!!edge?.blocked, stage:edge?.pc?.signalingState || 'none', ice:d.ice || 'unknown', gathering:d.gathering || 'unknown', localCandidates:d.local ?? 0, remoteCandidates:d.remote ?? 0, remoteApplied:d.remoteApplied||0,generation:d.generation,localRoutes:d.localRoutes||{},remoteRoutes:d.remoteRoutes||{},candidateErrors:d.candidateErrors||[],connectivity,error:edge?.lastError || '' };
   }));
-  const report = { version:'0.8.1',diagnosticSchema:2, browser:navigator.userAgent, secureContext:isSecureContext, rtcAvailable:typeof RTCPeerConnection==='function', status:$('#connection-label').textContent, signaling:state.link?.ws?.readyState ?? null, kind:state.room?.kind, peers };
+  const report = { version:'0.8.1',build:CONNECTION_BUILD,diagnosticSchema:2, browser:navigator.userAgent, secureContext:isSecureContext, rtcAvailable:typeof RTCPeerConnection==='function', status:$('#connection-label').textContent, signaling:state.link?.ws?.readyState ?? null, kind:state.room?.kind, peers };
   copyText(JSON.stringify(report,null,2), $('#copy-diagnostics'));
 });
 function updateExpiry() {
