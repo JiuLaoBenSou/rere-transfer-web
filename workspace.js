@@ -2,7 +2,7 @@
 import { TransferSession, MAX_FILE } from './transfer.js';
 import { ReceiverStore } from './receiver-store.js';
 import { RoomLink } from './room-link.js';
-import { GroupLink } from './group-link.js';
+import { GroupLink } from './group-link.js?v=0.8.1';
 import { RoomTransfers } from './room-transfers.js';
 import { createTransferMark } from './transfer-mark.js';
 import { apiURL, inviteURL, readInvite } from './app-config.js';
@@ -212,6 +212,7 @@ function renderDevices(peers = state.link?.members || [], edges = state.link?.ed
   $('#devices-panel').hidden = false; $('#self-device').textContent = state.room.label + ' · ' + (state.room.kind || '浏览器') + '（本机）';
   $('#device-count').textContent = (peers.length + 1) + ' / 6 台设备';
   const live = new Set(peers.map(p => p.peerId)); for (const id of targets) if (!live.has(id)) targets.delete(id);
+  const expanded = new Set([...$('#device-list').querySelectorAll('details[open]')].map(node => node.dataset.peer));
   $('#device-list').replaceChildren();
   for (const peer of peers) {
     const edge = edges.get(peer.peerId), ready = !!edge?.connected;
@@ -223,17 +224,19 @@ function renderDevices(peers = state.link?.members || [], edges = state.link?.ed
     const remote = state.session?.sessions.get(peer.peerId)?.session.remote;
     if (remote) detail.textContent += ' · 单文件 ' + formatBytes(remote.maxFile);
     label.append(input, textElement('span', peer.label + ' · ' + (peer.kind || '浏览器')), detail); $('#device-list').append(label);
-    if (edge?.blocked || edge?.lastError) {
+    if ((!ready && edge) || edge?.lastError) {
       const info = document.createElement('details'); info.className = 'peer-diagnostics';
+      info.dataset.peer = peer.peerId; info.open = expanded.has(peer.peerId);
       info.append(textElement('summary', peer.label + ' 的连接诊断'));
       const d = edge.diagnostics || {};
-      info.append(textElement('p', '本机 ' + (state.room.kind || '浏览器') + ' → ' + (peer.kind || '浏览器') + ' · ICE ' + (d.ice || '等待') + ' · 地址探测 ' + (d.gathering || '等待') + ' · 候选 ' + (d.local || '未知') + ' / ' + (d.remote || '未知')));
+      info.append(textElement('p', '本机 ' + (state.room.kind || '浏览器') + ' → ' + (peer.kind || '浏览器') + ' · ICE ' + (d.ice || '等待') + ' · 地址探测 ' + (d.gathering || '等待') + ' · 候选 ' + (d.local ?? '未知') + ' / ' + (d.remote ?? '未知')));
       info.append(textElement('p', edge.lastError || '未建立直连。网络隔离或防火墙可能阻止连接；文字可经房间内已连接设备送达，文件需要双方直连。'));
       $('#device-list').append(info);
     }
   }
   const connected = peers.filter(peer => edges.get(peer.peerId)?.connected).length;
-  connection(connected ? '已直连 ' + connected + ' 台设备' : peers.length ? '正在直连…' : '等待设备加入', connected > 0);
+  const blocked = peers.length > 0 && peers.every(peer => edges.get(peer.peerId)?.blocked || !peer.online);
+  connection(connected ? '已直连 ' + connected + ' 台设备' : blocked ? '直连未成功' : peers.length ? '正在直连…' : '等待设备加入', connected > 0, !connected && blocked);
   $('#connection-detail').textContent = '文件发给勾选设备 · 聊天独立发送给房间所有设备';
   $('#reconnect').disabled = !peers.some(p => { const edge=edges.get(p.peerId); return !edge?.connected || (edge.room.chat && edge.chatChannel?.readyState !== 'open'); });
   if (!connected && peers.length && [...edges.values()].some(edge => edge.blocked)) $('#signal-note').textContent = '部分设备未能直连，请检查网络和浏览器权限，再点「重新连接」。';
@@ -343,6 +346,14 @@ $('#leave-room').addEventListener('click', async () => {
   if (state.room === leaving) cleanup();
 });
 $('#reconnect').addEventListener('click', () => state.link?.reconnect(true));
+$('#copy-diagnostics').addEventListener('click', () => {
+  const peers = (state.link?.members || []).map(peer => {
+    const edge = state.link?.edges.get(peer.peerId), d = edge?.diagnostics || {};
+    return { name:peer.label, kind:peer.kind, online:peer.online, connected:!!edge?.connected, blocked:!!edge?.blocked, stage:edge?.pc?.signalingState || 'none', ice:d.ice || 'unknown', gathering:d.gathering || 'unknown', localCandidates:d.local ?? 0, remoteCandidates:d.remote ?? 0, error:edge?.lastError || '' };
+  });
+  const report = { version:'0.8.1', browser:navigator.userAgent, secureContext:isSecureContext, rtcAvailable:typeof RTCPeerConnection==='function', status:$('#connection-label').textContent, signaling:state.link?.ws?.readyState ?? null, kind:state.room?.kind, peers };
+  copyText(JSON.stringify(report,null,2), $('#copy-diagnostics'));
+});
 function updateExpiry() {
   if (!state.room) return;
   renderPairing();

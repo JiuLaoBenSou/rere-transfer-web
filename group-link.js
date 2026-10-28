@@ -31,7 +31,11 @@ export class GroupLink extends RoomLink {
       this.peer=this.members.length>0;this.hooks.onMembers?.(this.members,this.edges);return;
     }
     const edge=this.edges.get(message.from);
-    if(edge&&message.fromEpoch===edge.target.epoch&&message.toEpoch===this.epoch)await edge.handle(message);
+    if(edge&&message.fromEpoch===edge.target.epoch&&message.toEpoch===this.epoch)try{await edge.handle(message);}catch(error){
+      const category=['OperationError','InvalidStateError','InvalidAccessError','NotSupportedError','TypeError','AbortError','Error'].includes(error?.name)?error.name:'Error';
+      edge.lastError='协商 '+message.type+' 失败（'+category+(Number.isInteger(error?.status)?' / HTTP '+error.status:'')+'）';
+      this.hooks.onMembers?.(this.members,this.edges);
+    }
   }
   async reconnect(force=false){for(const edge of this.edges?.values()||[])if(!edge.connected||(edge.room.chat&&edge.chatChannel?.readyState!=='open'))await edge.reconnect(force);}
   dispose(){for(const edge of this.edges?.values()||[])edge.dispose();this.edges?.clear();super.dispose();}
