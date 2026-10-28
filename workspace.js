@@ -1,8 +1,8 @@
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
 import { TransferSession, MAX_FILE } from './transfer.js';
 import { ReceiverStore } from './receiver-store.js';
-import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=0.8.1-lan5';
-import { GroupLink } from './group-link.js?v=0.8.1-lan5';
+import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=0.8.1-pairing1';
+import { GroupLink } from './group-link.js?v=0.8.1-pairing1';
 import { RoomTransfers } from './room-transfers.js';
 import { createTransferMark } from './transfer-mark.js';
 import { apiURL, inviteURL, readInvite } from './app-config.js';
@@ -259,10 +259,10 @@ async function enter(room) {
   $('#pair-code').value = '';
   connection(room.role === 'host' ? '等待另一台设备' : '正在直连…');
   if (room.group) state.link = new GroupLink(room, {
-    onSelf: self => { Object.assign(state.room, self); profile.remember(state.room); },
+    onSelf: self => { Object.assign(state.room, self); profile.remember(state.room); renderPairing(); },
     onChatChannel: (channel, peer) => state.chat?.attach(peer.peerId, channel),
     onChannel: (channel, peer) => { let entry = state.session.sessions.get(peer.peerId); if (!entry) { const session = createSession(peer); state.session.set(peer.peerId, session, peer); entry = state.session.sessions.get(peer.peerId); } entry.session.attachChannel(channel); },
-    onMembers: (peers, edges) => { state.chat?.updatePeers(peers.filter(p => p.features?.includes('chat-v1'))); for (const peer of peers) { if (!knownPeers.has(peer.peerId)) { knownPeers.add(peer.peerId); targets.add(peer.peerId); } const entry = state.session.sessions.get(peer.peerId); if (entry) Object.assign(entry.peer, peer); } if (peers.length) $('#invite-options').open = false; renderDevices(peers, edges); },
+    onMembers: (peers, edges) => { const firstPeers = !knownPeers.size && peers.length; state.chat?.updatePeers(peers.filter(p => p.features?.includes('chat-v1'))); for (const peer of peers) { if (!knownPeers.has(peer.peerId)) { knownPeers.add(peer.peerId); targets.add(peer.peerId); } const entry = state.session.sessions.get(peer.peerId); if (entry) Object.assign(entry.peer, peer); } if (firstPeers) $('#invite-options').open = false; renderDevices(peers, edges); },
     onRemoved: id => { state.session.remove(id); state.chat?.remove(id); deviceResults.delete(id); },
     onConnected: () => { renderDevices(); error(); pumpChat(); },
     onSignaling: online => { $('#signal-note').textContent = online ? '' : '房间服务暂时断开，正在恢复；已建立的直连仍可继续。'; },
@@ -322,13 +322,13 @@ $('#refresh-pair-code').addEventListener('click', async () => {
 });
 function renderPairing() {
   if (!state.room) return;
-  const host = state.room.role === 'host'; $('#pairing-panel').hidden = !host;
-  if (!host) return;
+  const host = state.room.role === 'host'; $('#pairing-panel').hidden = !host && !state.room.group;
+  if (!host && !state.room.group) return;
   const used = !state.room.group && state.room.pairingUsed, remaining = Math.max(0, Math.ceil((state.room.pairingExpiresAt - Date.now()) / 1000));
   $('#pairing-code').hidden = used || !remaining || !state.room.pairingCode;
   $('#pairing-code').textContent = state.room.pairingCode?.replace(/^(\d{3})(\d{3})$/, '$1 $2') || '';
-  $('#pairing-status').textContent = used ? '已有设备加入，配对码已失效。' : remaining && state.room.pairingCode ? '有效期 ' + Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0') + (state.room.group ? ' · 可供多台设备加入' : ' · 仅可配对一次') : '配对码已过期，请获取新配对码。';
-  $('#refresh-pair-code').hidden = used || !!remaining;
+  $('#pairing-status').textContent = used ? '已有设备加入，配对码已失效。' : remaining && state.room.pairingCode ? '有效期 ' + Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0') + (state.room.group ? ' · 可供多台设备加入' : ' · 仅可配对一次') : host ? '配对码已过期，请获取新配对码。' : '配对码已过期，请让房间创建者更新，或使用邀请链接。';
+  $('#refresh-pair-code').hidden = !host || used || !!remaining;
 }
 async function joinInvite(value) {
   const invite = readInvite(value); if (!invite) throw new Error('请使用本站生成的完整房间链接。');

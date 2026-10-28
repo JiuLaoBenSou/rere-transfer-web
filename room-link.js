@@ -1,7 +1,7 @@
 // Codex / 2026-10-25. Signaling is separate from file traffic; host owns negotiation.
 import { apiURL } from './app-config.js';
 const NEGOTIATION_WAIT = 30000;
-export const CONNECTION_BUILD = '0.8.1-lan5';
+export const CONNECTION_BUILD = '0.8.1-pairing1';
 // ufrag is included on candidate events but may be omitted from SDP candidate lines.
 const candidateKey = value => value.replace(/\s+ufrag\s+\S+/g,'').trim();
 // Only classifications leave this module in diagnostics, never candidate addresses.
