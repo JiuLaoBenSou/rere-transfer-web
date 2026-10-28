@@ -7,6 +7,7 @@ const $=s=>document.querySelector(s),modes=['standard','complete','lan'];
 let mode=new URL(location.href).searchParams.get('mode')||'standard';if(!modes.includes(mode))mode='standard';$('#mode').value=mode;
 let room=null,target=null,peer=null,transfer=null,ws=null,controller=null,busy=false,peerTimer,heartbeat,statsTimer;
 let signaling=Promise.resolve(),messages=Promise.resolve(),lastStats={},ice='new',gathering='new',failure='',sent=0,received=0;
+let signalCounts={sent:{},received:{}};
 const downloads=[];
 const error=message=>{$('#error').textContent=message||'';};
 const status=message=>{$('#status').textContent=message;controls();};
@@ -23,21 +24,22 @@ async function statistics(){
  if(values&&peer===current)lastStats=summarizeStats(values);return lastStats;
 }
 async function diagnostic(){
- await statistics();const value={build:'reference1',engine:'simple-peer@9.11.1',mode,browser:navigator.userAgent,secureContext:isSecureContext,status:$('#status').textContent,ice,gathering,error:failure,stats:lastStats,filesSent:sent,filesReceived:received};
+ await statistics();const value={build:'reference1',engine:'simple-peer@9.11.1',mode,browser:navigator.userAgent,secureContext:isSecureContext,status:$('#status').textContent,ice,gathering,error:failure,signals:signalCounts,stats:lastStats,filesSent:sent,filesReceived:received};
  $('#diagnostic').value=JSON.stringify(value,null,2);return $('#diagnostic').value;
 }
 function closePeer(){clearTimeout(peerTimer);clearInterval(statsTimer);transfer?.dispose();transfer=null;const old=peer;peer=null;old?.destroy();controls();}
 function stop(message){controller?.abort();controller=null;clearInterval(heartbeat);ws?.close();ws=null;closePeer();status(message);}
 function connectPeer(member){
- target=member;const current=new globalThis.SimplePeer(peerOptions(room.peerId<member.peerId,mode));peer=current;failure='';status('正在建立连接…');
+ target=member;const current=new globalThis.SimplePeer(peerOptions(room.peerId<member.peerId,mode));peer=current;failure='';lastStats={};ice='new';gathering='new';signalCounts={sent:{},received:{}};status('正在建立连接…');
+ statsTimer=setInterval(()=>statistics(),3000);
  transfer=new DirectProbe({send:value=>current.send(value),drain:async()=>{const started=Date.now();while(current.bufferSize>256*1024){if(current.destroyed||peer!==current||Date.now()-started>15000)throw new Error('发送连接已中断。');await new Promise(r=>setTimeout(r,20));}},onText:value=>text(value),onFile:file=>{
    const url=URL.createObjectURL(file.blob),a=document.createElement('a');a.href=url;a.download=file.name;a.textContent='保存 '+file.name+' · 校验一致';$('#received').append(a);downloads.push({url,release:file.release});received++;
  },onSent:()=>{sent++;$('#file-status').textContent='对方已接收并校验。';},onError:error});
  const session=transfer;
  current.on('signal',signal=>{
-   signaling=signaling.then(async()=>{if(peer!==current)return;const envelope=signalEnvelope(signal);await api('/api/groups/'+room.roomId+'/signal',{...envelope,generation:1,to:member.peerId,fromEpoch:room.epoch,toEpoch:member.epoch},room.token);}).catch(()=>{failure='SIGNAL_REQUEST_FAILED';error('协商消息未送达，请重新创建验证房间。');});
+   signaling=signaling.then(async()=>{if(peer!==current)return;const envelope=signalEnvelope(signal);await api('/api/groups/'+room.roomId+'/signal',{...envelope,generation:1,to:member.peerId,fromEpoch:room.epoch,toEpoch:member.epoch},room.token);signalCounts.sent[envelope.type]=(signalCounts.sent[envelope.type]||0)+1;}).catch(()=>{failure='SIGNAL_REQUEST_FAILED';error('协商消息未送达，请重新创建验证房间。');});
  });
- current.on('connect',()=>{if(peer!==current)return;clearTimeout(peerTimer);status('已连接，可以互传');statsTimer=setInterval(()=>statistics(),5000);statistics();});
+ current.on('connect',()=>{if(peer!==current)return;clearTimeout(peerTimer);status('已连接，可以互传');statistics();});
  current.on('data',value=>session.receive(value));
  current.on('iceStateChange',(connection,gather)=>{ice=connection;gathering=gather;statistics();});
  current.on('error',event=>{if(peer!==current)return;failure=/^ERR_[A-Z_]+$/.test(event.code||'')?event.code:'PEER_ERROR';status('本次直连未成功');error('请展开「连接验证结果」查看本次结果。');});
@@ -59,6 +61,7 @@ async function handle(message){
    if(next&&!target)connectPeer(next);return;
  }
  if(!peer||!target||message.from!==target.peerId||message.fromEpoch!==target.epoch||message.toEpoch!==room.epoch||message.generation!==1)return;
+ if(['ice','offer','answer'].includes(message.type))signalCounts.received[message.type]=(signalCounts.received[message.type]||0)+1;
  if(message.type==='ice')peer.signal({candidate:message.data});
  else if(['offer','answer'].includes(message.type))peer.signal(message.data);
 }
