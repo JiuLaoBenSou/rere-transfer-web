@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN" data-api-origin="https://rere-transfer.video-to-gif-local.workers.dev">
+<head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://rere-transfer.video-to-gif-local.workers.dev wss://rere-transfer.video-to-gif-local.workers.dev; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow"><title>热热传 · 网页互传验证</title><link rel="icon" href="./rere-symbol.svg"><link rel="stylesheet" href="./direct-check.css"><script type="module" src="./direct-check.js?v=reference1"></script></head>
+<body><main>
+  <header><a href="./"><img src="./rere-symbol.svg" width="36" height="36" alt="">热热传</a><span>网页互传验证</span></header>
+  <h1>打开网页，试传一份文件。</h1><p class="muted">独立连接实现 · 文件不经过云端中转 · 验证页单文件上限 8 MiB</p>
+  <section><strong id="status" role="status">尚未连接</strong><p id="error" role="alert"></p>
+    <div id="start"><label for="mode">连接方式</label><select id="mode"><option value="standard">标准直连</option><option value="complete">完整地址协商</option><option value="lan">仅本机地址</option></select><button id="create">创建验证房间</button>
+      <form id="join-form"><label for="join-code">或输入对方的配对码</label><div class="row"><input id="join-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6 位配对码" required><button>加入</button></div></form>
+    </div>
+    <div id="room" hidden><p id="identity"></p><div class="invitation"><div><p class="muted">另一台设备打开本验证页，输入配对码；或直接扫码</p><output id="code"></output><p id="code-status"></p><input id="invite" readonly aria-label="验证房间链接"><button id="copy-invite" class="quiet">复制链接</button></div><canvas id="qr" aria-label="验证房间二维码"></canvas></div><p class="muted">本页一次验证两台设备，请勿使用主站入口加入。</p><button id="leave" class="quiet">退出验证</button></div>
+  </section>
+  <div class="panels"><section><h2>传文件</h2><input id="file" type="file"><button id="send-file" disabled>发送文件</button><p id="file-status" role="status"></p><div id="received"></div><button id="clear" class="quiet">清空接收文件</button></section>
+    <section><h2>聊两句</h2><div id="messages" aria-live="polite"></div><form id="text-form"><textarea id="text" maxlength="4000" placeholder="输入文字或链接" aria-label="消息"></textarea><button id="send-text" disabled>发送</button></form></section></div>
+  <details><summary>连接验证结果</summary><p class="muted">结果不包含文件内容、配对码或网络地址。</p><button id="diagnose" class="quiet">刷新结果</button><button id="copy-diagnostic" class="quiet">复制结果</button><textarea id="diagnostic" readonly aria-label="连接验证结果"></textarea></details>
+  <footer>验证实现：simple-peer 9.11.1 · <a href="./vendor/reference/LICENSES.txt">开源许可</a></footer>
+</main></body></html>

@@ -63,3 +63,6 @@ THE SOFTWARE.
 ```
 
 Logo lettering: Noto Sans SC, SIL Open Font License 1.1. See LOGO-FONT-OFL.txt.
+
+
+Reference test page: simple-peer 9.11.1 standalone distribution and qrcode 1.5.4 browser renderer. See vendor/reference/LICENSES.txt for bundled dependency notices. No PairDrop or LocalSend code is included.
