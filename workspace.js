@@ -69,12 +69,12 @@ function controls() {
   $('#reconnect').disabled = !state.room || (state.room.group ? !(state.link?.members || []).some(p => { const edge=state.link.edges.get(p.peerId); return !edge?.connected || (edge.room.chat && edge.chatChannel?.readyState !== 'open'); }) : state.connected);
   document.querySelectorAll('.device-row input').forEach(input => { input.disabled = state.busy; });
   const pending = state.files.some(item => item.status !== 'done');
-  const unavailable = state.busy ? '本次传输尚未结束，请查看下方进度；需要时可点「停止发送」。'
+  const unavailable = state.busy ? '文件传输中，可随时停止。'
     : !state.room ? '请先创建或加入同一个房间，连接后才能发送。'
     : !state.connected ? (state.link?.peer ? '另一台设备已加入，正在建立直连；连接成功后即可发送。' : '等待另一台设备加入此房间，连接后即可发送。') : '';
   $('#file-send-hint').textContent = unavailable || (!state.files.length ? '先选择文件，再点击「发送文件」。'
-    : pending ? (state.room?.group ? '文件仅发给勾选的 ' + targets.size + ' 台设备；文字发给所有已连通设备。' : '已就绪。点击「发送文件」，对方自动接收。') : '这些文件已发送完成。需要再传一次，请重新选择文件。');
-  $('#text-send-hint').textContent = !chatReady ? (state.room ? '等待聊天连接建立…' : '连接另一台设备，开始聊天。') : '发给房间所有设备 · Enter 发送 · Shift+Enter 换行';
+    : pending ? (state.room?.group ? '发送给 ' + targets.size + ' 台设备。' : '已就绪。点击「发送文件」，对方自动接收。') : '这些文件已发送完成。需要再传一次，请重新选择文件。');
+  $('#text-send-hint').textContent = !chatReady ? (state.room ? '等待连接…' : '连接另一台设备，开始聊天。') : 'Enter 发送 · Shift+Enter 换行';
 }
 async function api(route, { method = 'GET', data, auth = true, keepalive = false } = {}) {
   const response = await fetch(apiURL(route), { method, headers: { 'Content-Type': 'application/json', ...(auth && state.room ? { Authorization: 'Bearer ' + state.room.token } : {}) }, body: data === undefined ? undefined : JSON.stringify(data), keepalive });
@@ -192,7 +192,7 @@ function onReceived(result) {
   if (result.kind === 'file') {
     const url = URL.createObjectURL(result.blob); state.urls.set(result.id, url);
     const link = textElement('a', '下载文件', 'button primary download-file'); link.href = url; link.download = result.name; item.append(link);
-    item.append(textElement('p', '已接收到' + (result.storageMode === 'disk' ? '浏览器临时存储' : '页面内存') + '，点击下载并确认保存位置。'));
+    item.append(textElement('p', '接收完成，请下载保存。'));
   } else {
     item.append(textElement('pre', result.text, 'received-text')); const copy = textElement('button', '复制文字', 'secondary'); copy.addEventListener('click', () => copyText(result.text, copy)); item.append(copy);
   }
@@ -266,7 +266,7 @@ function renderDevices(peers = state.link?.members || [], edges = state.link?.ed
   const blocked = peers.length > 0 && peers.every(peer => edges.get(peer.peerId)?.blocked || !peer.online);
   const retrying = peers.some(peer=>{const edge=edges.get(peer.peerId);return edge?.pc&&edge.failedPeer===edge.pc;});
   connection(connected ? '已直连 ' + connected + ' 台设备' : blocked ? '直连未成功' : retrying ? '正在重新连接…' : peers.length ? '正在直连…' : '等待设备加入', connected > 0, !connected && blocked);
-  $('#connection-detail').textContent = '文件发给勾选设备 · 聊天独立发送给房间所有设备';
+  $('#connection-detail').textContent = '';
   $('#reconnect').disabled = !peers.some(p => { const edge=edges.get(p.peerId); return !edge?.connected || (edge.room.chat && edge.chatChannel?.readyState !== 'open'); });
   if (!connected && peers.length && [...edges.values()].some(edge => edge.blocked)) $('#signal-note').textContent = '暂时未能连接，请稍后重试。';
 }

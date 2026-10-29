@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /rere-transfer-web/direct-check.html
+Disallow: /rere-transfer-web/direct-check.js
+Disallow: /rere-transfer-web/direct-probe-core.js
+Sitemap: https://jiulaobensou.github.io/rere-transfer-web/sitemap.xml

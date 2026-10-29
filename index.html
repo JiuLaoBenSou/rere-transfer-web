@@ -1,12 +1,12 @@
 <!doctype html>
-<!-- Codex / 2026-10-25 / Local functional prototype -->
+<!-- 热热传 -->
 <html lang="zh-CN" data-api-origin="https://rere-transfer.video-to-gif-local.workers.dev">
 <head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://rere-transfer.video-to-gif-local.workers.dev wss://rere-transfer.video-to-gif-local.workers.dev; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="热热传：打开网页，把文件和文字传到身边的手机或电脑。同网设备之间点对点交换文件与文字。">
-  <title>热热传 · 把文件传到身边</title><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261028-mobile"><script type="module" src="./workspace.js?v=0.8.1-window2"></script>
+  <meta name="description" content="热热传：同一网络下，打开网页即可互传文件和文字。无需安装或注册，支持多设备配对。">
+  <title>热热传 · 局域网文件互传</title><link rel="canonical" href="https://jiulaobensou.github.io/rere-transfer-web/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-pages"><script type="module" src="./workspace.js?v=0.8.1-pages1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -16,9 +16,9 @@
   </defs></svg>
 
   <div class="app-shell">
-    <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-logo-dark.svg" alt="热热传" width="147" height="48"><img class="logo-light" src="./rere-logo-light.svg" alt="热热传" width="147" height="48"></a><div class="design-controls" hidden><a href="./styles.html">五种风格</a><label for="theme-select" class="sr-only">页面风格</label><select id="theme-select"><option value="warm">01 亲切工具</option><option value="minimal">02 极简白</option><option value="studio">03 创作工作台</option><option value="privacy">04 安静深色</option><option value="bold">05 鲜明品牌</option><option value="ember">炉火暖色 · 试稿</option></select></div></header>
+    <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-logo-dark.svg" alt="热热传" width="147" height="48"><img class="logo-light" src="./rere-logo-light.svg" alt="热热传" width="147" height="48"></a><div class="design-controls" hidden><a href="./styles.html">五种风格</a><label for="theme-select" class="sr-only">页面风格</label><select id="theme-select"><option value="warm">01 亲切工具</option><option value="minimal">02 极简白</option><option value="studio">03 创作工作台</option><option value="privacy">04 安静深色</option><option value="bold">05 鲜明品牌</option><option value="ember">炉火暖色 · 试稿</option></select></div><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">使用说明</a></header>
     <main>
-      <section class="intro"><h1><span>把文件，</span><span>传到身边。</span></h1><p>打开网页，把文件和文字传到身边的手机或电脑。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="intro"><h1><span>把文件，</span><span>传到身边。</span></h1><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
         <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"/></svg><div><h2 id="room-heading">连接身边的设备</h2><p>最多 6 台 · 同一网络</p></div></div>
         <button id="create-room" class="primary">创建房间</button>
@@ -38,25 +38,25 @@
       <div class="workspace">
         <section class="send-pane" aria-label="发送内容">
           <div class="section-heading"><h2>传文件</h2><span>只发给你选的设备</span></div>
-          <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="房间中的设备" hidden><div class="devices-heading"><strong>文件发给</strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div><p>勾选接收文件的设备；文字发给所有已连通设备。</p></section>
-            <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"/></svg><h2>把文件放在这里</h2><label for="files" class="button primary picker-button">或选择文件</label><input id="files" class="sr-only file-input" type="file" multiple><p class="drop-help">连接后可发送 · 保留原文件</p></div>
+          <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="房间中的设备" hidden><div class="devices-heading"><strong>文件发给</strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div></section>
+            <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"/></svg><h2>拖入文件</h2><label for="files" class="button primary picker-button">选择文件</label><input id="files" class="sr-only file-input" type="file" multiple><p class="drop-help">支持多选</p></div>
             <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden><button id="send-files" class="primary" aria-describedby="file-send-hint" disabled>发送文件</button><button id="retry-files" class="secondary" hidden>重试未完成</button><button id="clear-files" class="quiet">清空选择</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
           </div>
           <div class="send-feedback" hidden><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden></progress><div id="send-rates"></div><button id="cancel-send" class="quiet" hidden>停止发送</button></div>
         </section>
         <div id="text-panel" aria-label="房间聊天" class="panel-body chat-panel">
-            <div class="chat-heading"><h2>聊两句</h2><span>独立发送 · 自动显示</span></div>
-            <div class="chat-window"><div id="chat-empty" class="chat-empty"><p>一段文字，一个链接。<br>发过去，就在那里。</p></div><div id="chat-log" class="chat-log" role="log" aria-label="当前房间聊天消息" aria-live="polite" tabindex="0"></div></div>
-            <div class="chat-compose"><label for="text-draft" class="sr-only">消息内容</label><textarea id="text-draft" maxlength="20000" placeholder="发一条消息，也可以粘贴链接或代码…" spellcheck="false" rows="2"></textarea><button id="send-text" class="primary" aria-describedby="text-send-hint" disabled>发送</button></div>
+            <div class="chat-heading"><h2>聊两句</h2></div>
+            <div class="chat-window"><div id="chat-empty" class="chat-empty" aria-hidden="true"></div><div id="chat-log" class="chat-log" role="log" aria-label="当前房间聊天消息" aria-live="polite" tabindex="0"></div></div>
+            <div class="chat-compose"><label for="text-draft" class="sr-only">消息内容</label><textarea id="text-draft" maxlength="20000" placeholder="输入消息、链接或代码" spellcheck="false" rows="2"></textarea><button id="send-text" class="primary" aria-describedby="text-send-hint" disabled>发送</button></div>
             <div class="chat-compose-meta"><p id="text-send-hint" class="send-hint" role="status"></p><div><span id="text-count">0 / 20,000</span><button id="clear-text" class="quiet">清空输入</button></div></div>
           </div>
-        <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"/></svg>收件箱</h2><button id="clear-inbox" class="quiet" hidden>清空</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"/></svg><p>收到的内容会出现在这里</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
+        <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"/></svg>收件箱</h2><button id="clear-inbox" class="quiet" hidden>清空</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"/></svg><p>还没有收到文件</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
       </div>
-      <p id="capacity-note" class="prototype-note" role="status">正在检测接收能力…</p><p class="prototype-note">同一房间内自动接收文字和文件，请只与信任的设备配对。请保持双方页面打开；短暂断线可续传，刷新可恢复房间连接，但正在传的文件需重新发送。临时文件可用收件箱「清空」删除；异常关闭后的残留会在下次打开本站时清理。</p>
+      <p id="capacity-note" class="prototype-note" role="status">正在检测接收能力…</p><p class="prototype-note">只与信任的设备配对。传输时保持页面打开。</p>
     </main>
-    <footer><p>文件仅在选中的设备间直传。聊天发给房间所有设备，必要时经房间内其他设备送达。</p><span>双方在线 · 保持页面打开</span></footer>
+    <footer class="site-footer"><nav class="site-links" aria-label="网站导航"><a href="./about.html" target="_blank" rel="noopener">关于</a><a href="./contact.html" target="_blank" rel="noopener">联系</a><a href="./privacy.html" target="_blank" rel="noopener">隐私政策</a><a href="./how-to-use.html" target="_blank" rel="noopener">使用说明</a></nav><div class="footer-meta"><span>© 2026 Foster Fei · 热热传</span><a href="mailto:fanghong1994@gmail.com">fanghong1994@gmail.com</a></div></footer>
   </div>
-  <dialog id="qr-dialog"><h2>同一个房间，同一个入口</h2><img id="qr-image" alt="当前房间链接二维码" width="220" height="220"><p id="qr-note">正在检查访问方式…</p><button class="primary">关闭</button></dialog>
+  <dialog id="qr-dialog"><h2>扫码加入房间</h2><img id="qr-image" alt="当前房间链接二维码" width="220" height="220"><p id="qr-note">正在检查访问方式…</p><button class="primary">关闭</button></dialog>
   <dialog id="copy-dialog"><h2>请手动复制</h2><p>浏览器未允许自动复制，可全选下面的内容。</p><textarea readonly aria-label="待复制内容"></textarea><button class="primary">关闭</button></dialog>
 <dialog id="name-dialog"><h2>给这台设备起个名字</h2><form id="name-form"><label for="device-name">设备名称</label><input id="device-name" maxlength="24" required autocomplete="off"><p id="name-error" role="alert"></p><div class="actions"><button class="primary">保存</button><button id="cancel-name" type="button" class="quiet">取消</button></div></form></dialog>
 </body>
