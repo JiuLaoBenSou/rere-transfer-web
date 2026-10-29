@@ -1,5 +1,6 @@
+import {t} from './i18n.js?v=lang9';
 // Codex / 2026-10-26. One signaling socket; independent direct links per peer.
-import { RoomLink } from './room-link.js?v=0.8.1-pairing1';
+import { RoomLink } from './room-link.js?v=lang9';
 class PeerLink extends RoomLink {
   listen() {}
   request(action,method,data){return this.owner.request(action,method,{...data,to:this.target.peerId,fromEpoch:this.owner.epoch,toEpoch:this.target.epoch});}
@@ -33,7 +34,7 @@ export class GroupLink extends RoomLink {
     const edge=this.edges.get(message.from);
     if(edge&&message.fromEpoch===edge.target.epoch&&message.toEpoch===this.epoch)try{await edge.handle(message);}catch(error){
       const category=['OperationError','InvalidStateError','InvalidAccessError','NotSupportedError','TypeError','AbortError','Error'].includes(error?.name)?error.name:'Error';
-      edge.lastError='协商 '+message.type+' 失败（'+category+(Number.isInteger(error?.status)?' / HTTP '+error.status:'')+'）';
+      edge.lastError=t('协商 ')+message.type+t(' 失败（')+category+(Number.isInteger(error?.status)?' / HTTP '+error.status:'')+'）';
       this.hooks.onMembers?.(this.members,this.edges);
     }
   }

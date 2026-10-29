@@ -45,3 +45,12 @@ body .inbox-header,body[data-theme=ember] .inbox-header{padding:0 0 10px;min-hei
  body[data-theme=ember] .topbar{height:74px}.brand img{width:123px}body .chat-compose-meta>div{width:100%;justify-content:flex-end}
  .room-identity>strong{flex-basis:65%}body .room-identity #show-qr{padding:7px 10px;font-size:12px}body .chat-status{overflow-wrap:anywhere}
 }
+
+.language-control{display:flex;align-items:center;gap:8px;font-size:12px;margin-left:auto;white-space:nowrap}.language-control select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);color:inherit;min-height:36px}.topbar{flex-wrap:wrap}.site-header{flex-wrap:wrap}@media(max-width:450px){.language-control{font-size:0;gap:0}.language-control select{font-size:12px}.topbar{column-gap:10px}.topbar .site-help{margin-left:auto}}
+
+.brand-wordmark{font:650 22px/1.2 system-ui,sans-serif;margin-left:10px;letter-spacing:-.5px}.brand,.site-header>a:first-child{display:flex;align-items:center;text-decoration:none}.site-header .brand-wordmark{font-size:20px}:lang(en) .intro h1{letter-spacing:-1px}:lang(en) .intro h1 span{white-space:normal}@media(max-width:450px){.brand-wordmark{font-size:18px}.site-header .brand-wordmark{font-size:17px}:lang(en) .topbar .site-help{font-size:12px}}
+
+@media(max-width:360px){body[data-theme=ember] .topbar{height:auto;min-height:80px;padding:12px 0;row-gap:8px}}
+
+/* Keep help and language together at the right edge. */
+.header-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;margin-left:auto;flex-wrap:wrap}.header-actions .language-control{margin-left:0;font-size:12px;gap:8px}.header-actions .site-help{display:inline-flex;align-items:center;justify-content:center;margin:0;min-height:42px;padding:9px 16px;border:1px solid var(--accent);border-radius:10px;background:var(--soft,var(--surface));color:var(--accent);font-size:14px;font-weight:650;text-decoration:none;white-space:nowrap}.header-actions .site-help:hover{background:var(--accent);color:var(--accent-ink,#251c16)}body .topbar,body[data-theme=ember] .topbar{height:auto;min-height:94px;padding-top:16px;padding-bottom:16px;gap:14px}@media(max-width:760px){body .topbar,body[data-theme=ember] .topbar{min-height:74px;padding-top:12px;padding-bottom:12px}.header-actions{gap:10px}.header-actions .site-help{font-size:13px;padding:8px 12px}.header-actions .language-control{font-size:12px;gap:6px}}

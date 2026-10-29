@@ -1,5 +1,6 @@
+import {t} from './i18n.js?v=lang9';
 // Codex / 2026-10-25. Ephemeral receiver storage. No server file payloads.
-import { randomId } from './id.js';
+import { randomId } from './id.js?v=lang9';
 export const MEMORY_FILE = 32 * 1024 * 1024;
 export const MEMORY_INBOX = 64 * 1024 * 1024;
 export const DISK_FILE = 2 * 1024 * 1024 * 1024;
@@ -41,29 +42,29 @@ export class ReceiverStore {
   }
   async openEntry(meta) {
     await this.ready;
-    if (this.disposed) throw new Error('接收页面已结束。');
+    if (this.disposed) throw new Error(t('接收页面已结束。'));
     const max = meta.kind === 'text' ? 65536 : this.maxFile;
-    if (meta.size > max || this.retained + meta.size > this.maxInbox || this.entries.size >= 20) throw new Error('对方接收区容量不足，请清空收件箱或选择较小文件。');
+    if (meta.size > max || this.retained + meta.size > this.maxInbox || this.entries.size >= 20) throw new Error(t('对方接收区容量不足，请清空收件箱或选择较小文件。'));
     let fileHandle, writer;
     const disk = this.mode === 'disk' && meta.kind === 'file';
     const name = `${randomId()}.part`;
     if (disk) {
       const estimate = await this.nav.storage.estimate?.();
-      if (estimate && estimate.quota - estimate.usage < meta.size + 1024 * 1024) throw new Error('此设备临时存储空间不足，请先清理空间。');
+      if (estimate && estimate.quota - estimate.usage < meta.size + 1024 * 1024) throw new Error(t('此设备临时存储空间不足，请先清理空间。'));
       try { fileHandle = await this.directory.getFileHandle(name, { create: true }); writer = await fileHandle.createWritable(); }
-      catch { await this.directory.removeEntry(name).catch(() => {}); throw new Error('无法创建临时接收文件，请检查浏览器存储空间。'); }
+      catch { await this.directory.removeEntry(name).catch(() => {}); throw new Error(t('无法创建临时接收文件，请检查浏览器存储空间。')); }
     }
     const parts = []; let offset = 0, finished = false, released = false, closing = false, releasing = null;
     const entry = {
       mode: disk ? 'disk' : 'memory',
       write: async bytes => {
-        if (closing || released || finished || offset + bytes.length > meta.size) throw new Error('接收文件大小异常。');
+        if (closing || released || finished || offset + bytes.length > meta.size) throw new Error(t('接收文件大小异常。'));
         try { if (disk) await writer.write(bytes); else parts.push(bytes.slice()); }
-        catch { throw new Error('临时接收写入失败，可能是磁盘或浏览器空间不足。'); }
+        catch { throw new Error(t('临时接收写入失败，可能是磁盘或浏览器空间不足。')); }
         offset += bytes.length;
       },
       finish: async () => {
-        if (released || offset !== meta.size) throw new Error('接收文件不完整。');
+        if (released || offset !== meta.size) throw new Error(t('接收文件不完整。'));
         if (disk) { await writer.close(); writer = null; }
         finished = true;
         return disk ? fileHandle.getFile() : new Blob(parts, { type: 'application/octet-stream' });
@@ -76,7 +77,7 @@ export class ReceiverStore {
           if (writer) { await writer.abort().catch(() => {}); writer = null; }
           if (disk) {
             try { await this.directory.removeEntry(name); }
-            catch (error) { if (error.name !== 'NotFoundError') throw new Error('临时文件清理失败，请再次清空收件箱。'); }
+            catch (error) { if (error.name !== 'NotFoundError') throw new Error(t('临时文件清理失败，请再次清空收件箱。')); }
           }
           released = true; parts.length = 0;
           this.retained -= meta.size; this.entries.delete(meta.id);

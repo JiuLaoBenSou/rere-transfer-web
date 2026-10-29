@@ -1,5 +1,6 @@
+import {t} from './i18n.js?v=lang9';
 // Codex / 2026-10-25. Signaling is separate from file traffic; host owns negotiation.
-import { apiURL } from './app-config.js';
+import { apiURL } from './app-config.js?v=lang9';
 const NEGOTIATION_WAIT = 30000;
 export const CONNECTION_BUILD = '0.8.1-pairing1';
 // ufrag is included on candidate events but may be omitted from SDP candidate lines.
@@ -25,11 +26,11 @@ export class RoomLink {
     this.negotiationStartedAt = null;
     this.listen();
     this.tick = setInterval(() => {
-      if (Date.now() >= room.expiresAt) return this.end('房间已过期，请重新创建。');
-      if(this.peer&&!this.blocked&&!this.connected&&Number.isFinite(this.negotiationStartedAt)&&Date.now()-this.negotiationStartedAt>=90000){this.blocked=true;clearTimeout(this.retryTimer);this.hooks.onBlocked?.('设备间连接检查未通过，已停止自动重试。可复制连接诊断查看原因，再手动重新连接。');return;}
+      if (Date.now() >= room.expiresAt) return this.end(t('房间已过期，请重新创建。'));
+      if(this.peer&&!this.blocked&&!this.connected&&Number.isFinite(this.negotiationStartedAt)&&Date.now()-this.negotiationStartedAt>=90000){this.blocked=true;clearTimeout(this.retryTimer);this.hooks.onBlocked?.(t('设备间连接检查未通过，已停止自动重试。可复制连接诊断查看原因，再手动重新连接。'));return;}
       if (this.peer && !this.blocked && !this.connected && Date.now() - this.lastAttempt >= NEGOTIATION_WAIT) {
-        if (this.attempts >= 3) { this.blocked = true; this.hooks.onBlocked?.('暂时无法直连。请检查双方网络及浏览器的本地网络权限，再点「重新连接」。'); return; }
-        if (this.lastAttempt) this.hooks.onRetryError?.('尚未建立直连。请确认双方在同一网络并保持页面打开；访客网络、网络隔离或浏览器限制可能阻止连接。');
+        if (this.attempts >= 3) { this.blocked = true; this.hooks.onBlocked?.(t('暂时无法直连。请检查双方网络及浏览器的本地网络权限，再点「重新连接」。')); return; }
+        if (this.lastAttempt) this.hooks.onRetryError?.(t('尚未建立直连。请确认双方在同一网络并保持页面打开；访客网络、网络隔离或浏览器限制可能阻止连接。'));
         this.reconnect();
       }
     }, 1000);
@@ -40,7 +41,7 @@ export class RoomLink {
       method, signal: this.abort.signal, headers: { Authorization: `Bearer ${this.room.token}`, 'Content-Type': 'application/json' },
       body: data === undefined ? undefined : JSON.stringify(data),
     });
-    if (!response.ok) { const value = await response.json().catch(() => ({})); throw Object.assign(new Error(value.error || '连接服务暂时不可用。'), { status: response.status }); }
+    if (!response.ok) { const value = await response.json().catch(() => ({})); throw Object.assign(new Error(value.error || t('连接服务暂时不可用。')), { status: response.status }); }
     return response;
   }
   async signal(type, data, generation = this.generation) { await this.request('signal', 'POST', { type, data, generation }); }
@@ -60,7 +61,7 @@ export class RoomLink {
             const data = block.split('\n').find(line => line.startsWith('data: '));
             if (data) {
               try { await this.handle(JSON.parse(data.slice(6))); }
-              catch { this.hooks.onRetryError?.('直连协商未完成，请保持双方页面打开。'); }
+              catch { this.hooks.onRetryError?.(t('直连协商未完成，请保持双方页面打开。')); }
             }
           }
         }
@@ -101,11 +102,11 @@ export class RoomLink {
                 if (ws.readyState === 1) ws.send('ping');
               }, 15000); return;
             }
-            if (message.type === 'auth-error') { this.end('房间身份失效或重复连接，请重新加入。'); return; }
+            if (message.type === 'auth-error') { this.end(t('房间身份失效或重复连接，请重新加入。')); return; }
             await this.handle(message);
-          }).catch(() => this.hooks.onRetryError?.('连接协商未完成，请保持双方页面打开。'));
+          }).catch(() => this.hooks.onRetryError?.(t('连接协商未完成，请保持双方页面打开。')));
         };
-        ws.onclose = event => { stop(); if (this.ws === ws && event?.code === 4001 && !this.abort.signal.aborted) this.end('此设备的房间已在另一个页面恢复，请使用新页面。'); };
+        ws.onclose = event => { stop(); if (this.ws === ws && event?.code === 4001 && !this.abort.signal.aborted) this.end(t('此设备的房间已在另一个页面恢复，请使用新页面。')); };
         ws.onerror = () => { ws.close(); stop(); };
       });
       if (this.abort.signal.aborted) return;
@@ -216,7 +217,7 @@ export class RoomLink {
     if (force && !remote) { this.blocked = false; this.attempts = 0; this.negotiationStartedAt = null; }
     if (this.blocked) return;
     if(this.attempts>=3||(Number.isFinite(this.negotiationStartedAt)&&Date.now()-this.negotiationStartedAt>=90000)){
-      this.blocked=true;clearTimeout(this.retryTimer);this.hooks.onBlocked?.('未能连接这台设备。可以点「重新连接」再试。');return;
+      this.blocked=true;clearTimeout(this.retryTimer);this.hooks.onBlocked?.(t('未能连接这台设备。可以点「重新连接」再试。'));return;
     }
     // Late signaling and socket reconnects must not discard an offer still in flight.
     const pending = !['connected', 'failed', 'closed'].includes(this.pc?.connectionState);
@@ -235,7 +236,7 @@ export class RoomLink {
     finally { this.negotiating = false; }
   }
   async handle(message) {
-    if (message.type === 'closed') return this.end(message.reason === 'expired' ? '房间已过期，请重新创建。' : '房间已结束，请重新创建。');
+    if (message.type === 'closed') return this.end(message.reason === 'expired' ? t('房间已过期，请重新创建。') : t('房间已结束，请重新创建。'));
     if (['peer', 'peer-returned'].includes(message.type)) {
       if (message.type === 'peer-returned' || !this.peer) { this.blocked = false; this.attempts = 0; this.negotiationStartedAt=null; }
       this.peer = true; if (!this.connected) await this.reconnect(); return;

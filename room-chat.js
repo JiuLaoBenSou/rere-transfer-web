@@ -1,5 +1,6 @@
+import {t} from './i18n.js?v=lang9';
 // Codex / 2026-10-26. Independent acknowledged chat; forwarding stays in this room.
-import {randomId}from'./id.js';
+import {randomId}from'./id.js?v=lang9';
 const ID=/^[a-f0-9-]{36}$/i,PEER=/^\d{6}$/;
 export class RoomChat {
  constructor(selfId,hooks={},options={}){this.selfId=selfId;this.hooks=hooks;this.peers=new Map();this.channels=new Map();this.seen=new Map();this.pending=new Map();this.ackTimeout=options.ackTimeout||10000;this.disposed=false;}
@@ -31,11 +32,11 @@ export class RoomChat {
   }
  }
  async sendText(text){
-  if(this.disposed)throw new Error('聊天已结束。');if(typeof text!=='string'||!text.trim())throw new Error('请输入消息。');if(text.length>20000||new TextEncoder().encode(text).length>65536)throw new Error('消息过长，超过本版上限。');
-  if(!this.peers.size||!this.connected.length)throw new Error('请等待设备的聊天连接建立。');if(this.pending.size>=20)throw new Error('待发送消息过多，请稍后再试。');
+  if(this.disposed)throw new Error(t('聊天已结束。'));if(typeof text!=='string'||!text.trim())throw new Error(t('请输入消息。'));if(text.length>20000||new TextEncoder().encode(text).length>65536)throw new Error(t('消息过长，超过本版上限。'));
+  if(!this.peers.size||!this.connected.length)throw new Error(t('请等待设备的聊天连接建立。'));if(this.pending.size>=20)throw new Error(t('待发送消息过多，请稍后再试。'));
   const packet={v:1,type:'message',id:randomId(),from:this.selfId,text,ttl:6};this.mark('m:'+this.selfId+':'+packet.id);
   return new Promise(resolve=>{const job={packet,resolve,targets:new Set(this.peers.keys()),delivered:new Set()};this.pending.set(packet.id,job);job.timer=setTimeout(()=>this.finish(packet.id),this.ackTimeout);job.retry=setTimeout(()=>this.flood(packet),Math.min(2000,this.ackTimeout/2));this.flood(packet);});
  }
- finish(id){const job=this.pending.get(id);if(!job)return;clearTimeout(job.timer);clearTimeout(job.retry);this.pending.delete(id);job.resolve({delivered:job.delivered.size,total:job.targets.size,missing:[...job.targets].filter(id=>!job.delivered.has(id)).map(id=>this.peers.get(id)?.label||'已离开设备')});}
+ finish(id){const job=this.pending.get(id);if(!job)return;clearTimeout(job.timer);clearTimeout(job.retry);this.pending.delete(id);job.resolve({delivered:job.delivered.size,total:job.targets.size,missing:[...job.targets].filter(id=>!job.delivered.has(id)).map(id=>this.peers.get(id)?.label||t('已离开设备'))});}
  dispose(){this.disposed=true;for(const id of this.pending.keys())this.finish(id);for(const id of this.channels.keys())this.remove(id);}
 }
