@@ -5,7 +5,7 @@ import { ReceiverStore, DISK_FILE } from './receiver-store.js';
 export { sha256 };
 export const MAX_FILE = DISK_FILE, MAX_TEXT = 20000, BLOCK = 256 * 1024;
 const CHUNK = 16 * 1024;
-const MAX_WINDOW = 8; // At most 2 MiB of unacknowledged payload per recipient.
+const MAX_WINDOW = 4; // At most 1 MiB in flight; larger cold bursts regressed browser tests.
 const noop = () => {};
 const interrupted = () => Object.assign(new Error('连接暂时中断，正在等待恢复…'), { code: 'LINK_INTERRUPTED' });
 export class TransferSession {
@@ -174,10 +174,10 @@ export class TransferSession {
   async sendBlocks(job, read) {
     const window = Math.min(this.sendWindow, this.remote?.receiveWindow || 1);
     const epoch = this.epoch, pending = [];
-    let cursor = job.offset;
+    let cursor = job.offset, allowed = 1;
     const check = () => { this.assertJob(job); if (epoch !== this.epoch) throw interrupted(); };
     while (cursor < job.size || pending.length) {
-      while (cursor < job.size && pending.length < window) {
+      while (cursor < job.size && pending.length < allowed) {
         check();
         const bytes = new Uint8Array(await read(cursor, Math.min(cursor + BLOCK, job.size)));
         check();
@@ -195,6 +195,8 @@ export class TransferSession {
       const ack = await next.ack; check();
       if (ack.offset !== next.end) throw new Error('分块确认位置不一致。');
       job.offset = ack.offset; this.hooks.onSendProgress(job.offset, job.size);
+      // Warm up each new/resumed transfer; avoid bursting into a cold receiver.
+      allowed = Math.min(window, allowed + 1);
     }
   }
   async accept(id, accepted) {
