@@ -5,6 +5,7 @@ import { ReceiverStore, DISK_FILE } from './receiver-store.js';
 export { sha256 };
 export const MAX_FILE = DISK_FILE, MAX_TEXT = 20000, BLOCK = 256 * 1024;
 const CHUNK = 16 * 1024;
+const MAX_WINDOW = 8; // At most 2 MiB of unacknowledged payload per recipient.
 const noop = () => {};
 const interrupted = () => Object.assign(new Error('连接暂时中断，正在等待恢复…'), { code: 'LINK_INTERRUPTED' });
 export class TransferSession {
@@ -16,10 +17,11 @@ export class TransferSession {
     this.disposed = false; this.confirmTimeout = options.confirmTimeout || 60000;
     this.resumeTimeout = options.resumeTimeout || 60000; this.blockTimeout = options.blockTimeout || 30000;
     this.autoAccept = options.autoAccept === true;
+    this.sendWindow = Number.isInteger(options.sendWindow) ? Math.min(MAX_WINDOW, Math.max(1, options.sendWindow)) : MAX_WINDOW;
     this.ready = this.store.ready.then(() => { this.hooks.onLocalCapabilities(this.capabilities()); });
     if (channel) this.attachChannel(channel);
   }
-  capabilities() { return { version: 2, mode: this.store.mode, maxFile: this.store.maxFile, maxInbox: this.store.maxInbox }; }
+  capabilities() { return { version: 2, mode: this.store.mode, maxFile: this.store.maxFile, maxInbox: this.store.maxInbox, receiveWindow: MAX_WINDOW }; }
   attachChannel(channel) {
     if (this.disposed) return;
     if (this.channel && this.channel !== channel) {
@@ -150,17 +152,7 @@ export class TransferSession {
             if (accepted.hash !== job.hash) throw new Error('接收回执校验不一致。');
             complete = true; break;
           }
-          while (job.offset < job.size) {
-            this.assertJob(job);
-            const bytes = new Uint8Array(await read(job.offset, Math.min(job.offset + BLOCK, job.size)));
-            const acknowledgement = this.wait('ack', job.id, this.blockTimeout);
-            this.control({ type: 'block', id: job.id, offset: job.offset, length: bytes.length, hash: sha256(bytes) });
-            for (let offset = 0; offset < bytes.length; offset += CHUNK) { await this.drain(job); this.channel.send(bytes.slice(offset, offset + CHUNK).buffer); }
-            this.control({ type: 'block-end', id: job.id });
-            const ack = await acknowledgement;
-            if (ack.offset !== job.offset + bytes.length) throw new Error('分块确认位置不一致。');
-            job.offset = ack.offset; this.hooks.onSendProgress(job.offset, job.size);
-          }
+          await this.sendBlocks(job, read);
           const receipt = this.wait('received', job.id, this.blockTimeout);
           this.control({ type: 'end', id: job.id, hash: job.hash }); this.hooks.onSendStatus('已发送，等待对方校验…');
           const received = await receipt;
@@ -178,6 +170,32 @@ export class TransferSession {
     } catch (error) {
       this.notifyCancel(job.id); throw job.cancelled ? new Error('已取消发送。') : error;
     } finally { this.hooks.onSendFinished({ id: job.id }); this.rejectWaiters(job.id, new Error('本次发送已结束。')); if (this.outgoing === job) this.outgoing = null; }
+  }
+  async sendBlocks(job, read) {
+    const window = Math.min(this.sendWindow, this.remote?.receiveWindow || 1);
+    const epoch = this.epoch, pending = [];
+    let cursor = job.offset;
+    const check = () => { this.assertJob(job); if (epoch !== this.epoch) throw interrupted(); };
+    while (cursor < job.size || pending.length) {
+      while (cursor < job.size && pending.length < window) {
+        check();
+        const bytes = new Uint8Array(await read(cursor, Math.min(cursor + BLOCK, job.size)));
+        check();
+        const end = cursor + bytes.length;
+        const ack = this.wait('ack@' + end, job.id, this.blockTimeout);
+        pending.push({ end, ack });
+        this.control({ type: 'block', id: job.id, offset: cursor, length: bytes.length, hash: sha256(bytes) });
+        for (let offset = 0; offset < bytes.length; offset += CHUNK) {
+          await this.drain(job); check();
+          this.channel.send(bytes.slice(offset, offset + CHUNK).buffer);
+        }
+        this.control({ type: 'block-end', id: job.id }); cursor = end;
+      }
+      const next = pending.shift();
+      const ack = await next.ack; check();
+      if (ack.offset !== next.end) throw new Error('分块确认位置不一致。');
+      job.offset = ack.offset; this.hooks.onSendProgress(job.offset, job.size);
+    }
   }
   async accept(id, accepted) {
     const item = this.incoming; if (!item || item.id !== id || item.accepted) return;
@@ -226,11 +244,18 @@ export class TransferSession {
     if (!msg || typeof msg !== 'object' || Array.isArray(msg)) return;
     if (msg.type === 'hello') {
       if (msg.version !== 2 || !Number.isSafeInteger(msg.maxFile) || msg.maxFile < 0 || msg.maxFile > MAX_FILE) return;
-      this.remote = { mode: msg.mode === 'disk' ? 'disk' : 'memory', maxFile: msg.maxFile };
+      this.remote = { mode: msg.mode === 'disk' ? 'disk' : 'memory', maxFile: msg.maxFile,
+        receiveWindow: Number.isInteger(msg.receiveWindow) && msg.receiveWindow > 0 ? Math.min(MAX_WINDOW, msg.receiveWindow) : 1 };
       this.hooks.onRemoteCapabilities(this.remote); return;
     }
     if (typeof msg.id !== 'string' || !/^[a-f0-9-]{36}$/.test(msg.id)) return;
-    if (['accepted', 'received', 'ack'].includes(msg.type)) { this.resolve(msg.type, msg); return; }
+    if (msg.type === 'ack') {
+      const type = 'ack@' + msg.offset;
+      if (this.waiters.has(type + ':' + msg.id)) this.resolve(type, msg);
+      else if ([...this.waiters.keys()].some(key => key.startsWith('ack@') && key.endsWith(':' + msg.id))) this.rejectWaiters(msg.id, new Error('分块确认位置不一致。'));
+      return;
+    }
+    if (['accepted', 'received'].includes(msg.type)) { this.resolve(msg.type, msg); return; }
     if (msg.type === 'failed') { this.rejectWaiters(msg.id, new Error('对方接收或校验失败，请重试。')); return; }
     if (msg.type === 'cancel') {
       this.rejectWaiters(msg.id, new Error('对方取消了本次传输。'));
