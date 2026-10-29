@@ -1,5 +1,6 @@
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
-import { TransferSession, MAX_FILE } from './transfer.js';
+import { TransferSession, MAX_FILE } from './transfer.js?v=speed1';
+import { TransferRate, formatRate } from './transfer-rate.js';
 import { ReceiverStore } from './receiver-store.js';
 import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=0.8.1-pairing1';
 import { GroupLink } from './group-link.js?v=0.8.1-pairing1';
@@ -21,6 +22,20 @@ const profile = new DeviceProfile();
 const state = { room: null, link: null, session: null, chat: null, chatBusy: false, connected: false, busy: false, roomBusy: false, files: [], urls: new Map(), qrUrl: null, stopQueue: false, remote: null, chatQueue: [], currentChat: null, unread: 0 };
 const ROOM_CACHE = 'rere-room-v1';
 const targets = new Set(), deviceResults = new Map(), knownPeers = new Set();
+const sendRates = new Map(), receiveRates = new Map();
+function renderRates() {
+  $('#send-rates').replaceChildren(...[...sendRates.values()].map(entry => {
+    const value = entry.meter.snapshot();
+    return textElement('p', entry.name + ' · ' + (entry.active ? formatRate(value.rate) : '本次均速 ' + formatRate(value.average)) +
+      ' · 传输 ' + value.elapsed.toFixed(1) + ' 秒 · 准备 ' + entry.prepare.toFixed(1) + ' 秒', 'receipt');
+  }));
+  for (const [id, entry] of receiveRates) {
+    const node = inboxNode(id)?.querySelector('p');
+    if (node) node.textContent = '正在接收 ' + formatBytes(entry.bytes) + ' / ' + formatBytes(entry.total) + ' · ' + formatRate(entry.meter.snapshot().rate);
+  }
+}
+// Refresh while stalled too, so the last nonzero speed does not stay on screen.
+setInterval(() => { if ([...sendRates.values()].some(entry => entry.active) || receiveRates.size) renderRates(); }, 500);
 const roomPath = room => '/api/' + (room.group ? 'groups' : 'rooms') + '/' + room.roomId;
 const themes = ['warm', 'minimal', 'studio', 'privacy', 'bold', 'ember'];
 let transferMark;
@@ -112,7 +127,7 @@ function sendQueue() {
     for (const item of state.files) {
       if (item.status === 'done') continue;
       if (state.stopQueue) break;
-      item.status = 'sending'; item.reason = ''; renderFiles();
+      sendRates.clear(); renderRates(); item.status = 'sending'; item.reason = ''; renderFiles();
       try {
         if (state.room?.group) { item.delivered ||= new Set(); await session.sendFile(item.file, recipients, item.delivered); }
         else await session.sendFile(item.file);
@@ -162,6 +177,7 @@ function onOffer(meta, receivingSession = state.session, peer) {
   stop.addEventListener('click', () => { if (session.incoming?.id === meta.id) session.failIncoming('你已停止接收。'); }); item.append(stop);
 }
 function onReceived(result) {
+  const receivedRate = receiveRates.get(result.id)?.meter.finish(); receiveRates.delete(result.id);
   $('#resume-note').textContent = '';
   if (result.kind === 'text') {
     chatBubble(result.text, false, result.sender || '对方');
@@ -180,7 +196,7 @@ function onReceived(result) {
   } else {
     item.append(textElement('pre', result.text, 'received-text')); const copy = textElement('button', '复制文字', 'secondary'); copy.addEventListener('click', () => copyText(result.text, copy)); item.append(copy);
   }
-  item.append(textElement('p', formatBytes(result.size) + ' · SHA-256 已校验', 'receipt')); capacity();
+  item.append(textElement('p', formatBytes(result.size) + ' · SHA-256 已校验' + (receivedRate ? ' · 平均 ' + formatRate(receivedRate.average) + ' · ' + receivedRate.elapsed.toFixed(1) + ' 秒' : ''), 'receipt')); capacity();
 }
 function capacity() {
   $('#capacity-note').textContent = '本机接收：' + (store.mode === 'disk' ? '临时磁盘模式' : '内存模式') + ' · 单文件最多 ' + formatBytes(store.maxFile) + ' · 收件箱 ' + formatBytes(store.retained) + ' / ' + formatBytes(store.maxInbox) + '，最多 20 条。' + (state.remote ? ' 对方单文件上限 ' + formatBytes(state.remote.maxFile) + '。' : '');
@@ -198,15 +214,24 @@ async function clearInbox() {
 }
 $('#clear-inbox').addEventListener('click', clearInbox);
 function createSession(peer) {
+  let sendEntry, prepareStarted = 0, prepareSeconds = 0;
   const session = new TransferSession(null, {
     onOffer: meta => onOffer(meta, session, peer), onReceived: result => onReceived(peer ? { ...result, sender: peer.label } : result), onSendStatus: sendStatus,
     onLocalCapabilities: capacity, onRemoteCapabilities: value => { if (peer) renderDevices(); else state.remote = value; capacity(); },
-    onPrepareProgress: (bytes, total) => sendStatus('正在准备校验 ' + Math.round(bytes / total * 100) + '%…'),
-    onSendProgress: (bytes, total) => { $('#send-progress').hidden = false; $('#send-progress').value = total ? bytes / total * 100 : 100; sendStatus('正在发送 ' + formatBytes(bytes) + ' / ' + formatBytes(total)); transferMark.setProgress(total ? bytes / total : 1, 'send'); },
-    onReceiveProgress: (id, bytes, total) => { const node = inboxNode(id)?.querySelector('p'); if (node) node.textContent = '正在接收 ' + formatBytes(bytes) + ' / ' + formatBytes(total); transferMark.setProgress(total ? bytes / total : 1, 'receive'); },
+    onPrepareStart: () => { prepareStarted = performance.now(); prepareSeconds = 0; sendEntry = null; },
+    onPrepareProgress: (bytes, total) => { prepareSeconds = (performance.now() - prepareStarted) / 1000; sendStatus('正在准备校验 ' + Math.round(bytes / total * 100) + '%…'); },
+    onSendStart: ({ id, offset }) => {
+      if (sendEntry) sendEntry.meter.rebase(offset);
+      else { sendEntry = { meter: new TransferRate(offset), name: peer?.label || '对方', prepare: prepareSeconds, active: true }; sendRates.set(id, sendEntry); }
+      renderRates();
+    },
+    onSendFinished: () => { if (sendEntry) { sendEntry.active = false; sendEntry.meter.finish(); renderRates(); } },
+    onSendProgress: (bytes, total) => { sendEntry?.meter.update(bytes); $('#send-progress').hidden = false; $('#send-progress').value = total ? bytes / total * 100 : 100; sendStatus('正在发送 ' + formatBytes(bytes) + ' / ' + formatBytes(total)); transferMark.setProgress(total ? bytes / total : 1, 'send'); },
+    onReceiveStart: ({ id, offset, size }) => { const entry = receiveRates.get(id); if (entry) { entry.meter.rebase(offset); entry.bytes = offset; } else receiveRates.set(id, { meter: new TransferRate(offset), bytes: offset, total: size }); },
+    onReceiveProgress: (id, bytes, total) => { const entry = receiveRates.get(id); if (entry) { entry.meter.update(bytes); entry.bytes = bytes; } transferMark.setProgress(total ? bytes / total : 1, 'receive'); },
     onPaused: () => { $('#resume-note').textContent = '连接暂时中断，页面仍在等待续接。请保持双方页面打开。'; },
     onResumed: ({ offset }) => { $('#resume-note').textContent = '已恢复连接，从 ' + formatBytes(offset) + ' 继续。'; },
-    onReceiveError: (id, reason) => { transferMark.reset(); const item = inboxNode(id); if (item) { item.querySelector('.actions')?.remove(); item.querySelector('.stop-receive')?.remove(); const p = item.querySelector('p'); if (p) p.textContent = reason; } capacity(); },
+    onReceiveError: (id, reason) => { receiveRates.delete(id); transferMark.reset(); const item = inboxNode(id); if (item) { item.querySelector('.actions')?.remove(); item.querySelector('.stop-receive')?.remove(); const p = item.querySelector('p'); if (p) p.textContent = reason; } capacity(); },
   }, { store, autoAccept: true });
   return session;
 }

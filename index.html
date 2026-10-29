@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="热热传：打开网页，把文件和文字传到身边的手机或电脑。同网设备之间点对点交换文件与文字。">
   <title>热热传 · 把文件传到身边</title><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261028-mobile"><script type="module" src="./workspace.js?v=0.8.1-ux1"></script>
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261028-mobile"><script type="module" src="./workspace.js?v=0.8.1-speed1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -42,7 +42,7 @@
             <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"/></svg><h2>把文件放在这里</h2><label for="files" class="button primary picker-button">或选择文件</label><input id="files" class="sr-only file-input" type="file" multiple><p class="drop-help">连接后可发送 · 保留原文件</p></div>
             <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden><button id="send-files" class="primary" aria-describedby="file-send-hint" disabled>发送文件</button><button id="retry-files" class="secondary" hidden>重试未完成</button><button id="clear-files" class="quiet">清空选择</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
           </div>
-          <div class="send-feedback" hidden><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden></progress><button id="cancel-send" class="quiet" hidden>停止发送</button></div>
+          <div class="send-feedback" hidden><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden></progress><div id="send-rates"></div><button id="cancel-send" class="quiet" hidden>停止发送</button></div>
         </section>
         <div id="text-panel" aria-label="房间聊天" class="panel-body chat-panel">
             <div class="chat-heading"><h2>聊两句</h2><span>独立发送 · 自动显示</span></div>

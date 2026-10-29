@@ -124,7 +124,7 @@ export class TransferSession {
     try {
       await this.ready; await this.waitConnected(job);
       if (job.kind === 'file' && this.remote && job.size > this.remote.maxFile) throw new Error('对方浏览器当前仅支持较小文件，请查看接收上限。');
-      this.hooks.onSendStatus('正在准备校验…');
+      this.hooks.onPrepareStart(); this.hooks.onSendStatus('正在准备校验…');
       const hash = createHasher();
       for (let offset = 0; offset < job.size; offset += BLOCK) {
         this.assertJob(job); const bytes = new Uint8Array(await read(offset, Math.min(offset + BLOCK, job.size)));
@@ -145,6 +145,7 @@ export class TransferSession {
           if (!Number.isSafeInteger(offset) || offset < job.offset || offset > job.size || (offset !== job.size && offset % BLOCK !== 0)) throw new Error('对方返回了无效续接位置。');
           if (job.attempts) this.hooks.onResumed({ id: job.id, offset });
           job.offset = offset; job.attempts++;
+          this.hooks.onSendStart({ id: job.id, offset, size: job.size });
           if (accepted.complete) {
             if (accepted.hash !== job.hash) throw new Error('接收回执校验不一致。');
             complete = true; break;
@@ -176,7 +177,7 @@ export class TransferSession {
       return { id: job.id, resumed: Math.max(0, job.attempts - 1), hash: job.hash };
     } catch (error) {
       this.notifyCancel(job.id); throw job.cancelled ? new Error('已取消发送。') : error;
-    } finally { this.rejectWaiters(job.id, new Error('本次发送已结束。')); if (this.outgoing === job) this.outgoing = null; }
+    } finally { this.hooks.onSendFinished({ id: job.id }); this.rejectWaiters(job.id, new Error('本次发送已结束。')); if (this.outgoing === job) this.outgoing = null; }
   }
   async accept(id, accepted) {
     const item = this.incoming; if (!item || item.id !== id || item.accepted) return;
@@ -186,6 +187,7 @@ export class TransferSession {
       item.sink = await this.store.open(item);
       if (this.incoming !== item || this.disposed) { await item.sink.release(); return; }
       item.accepted = true;
+      this.hooks.onReceiveStart({ id: item.id, offset: item.offset, size: item.size });
       this.tryControl({ type: 'accepted', id, accept: true, offset: item.offset });
       this.armIncoming(item);
     } catch (error) {
@@ -247,7 +249,10 @@ export class TransferSession {
         const item = this.incoming;
         if (item.hash !== msg.hash || item.size !== msg.size || item.kind !== msg.kind || item.name !== msg.name) throw new Error('续接文件身份不一致。');
         item.block = null; this.armIncoming(item);
-        if (item.accepted) this.tryControl({ type: 'accepted', id: msg.id, accept: true, offset: item.offset });
+        if (item.accepted) {
+          this.hooks.onReceiveStart({ id: item.id, offset: item.offset, size: item.size });
+          this.tryControl({ type: 'accepted', id: msg.id, accept: true, offset: item.offset });
+        }
         return;
       }
       if (this.incoming || msg.size > (msg.kind === 'text' ? 65536 : this.store.maxFile) || this.store.retained + msg.size > this.store.maxInbox || this.store.entries.size >= 20) {
