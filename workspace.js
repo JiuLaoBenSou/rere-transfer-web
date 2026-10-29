@@ -9,6 +9,9 @@ import { apiURL, inviteURL, readInvite } from './app-config.js';
 import { DeviceProfile } from './device-profile.js';
 import { RoomChat } from './room-chat.js';
 const $ = selector => document.querySelector(selector);
+// Internal tools are opt-in; ordinary invitations never carry this flag.
+const debugMode = new URL(location.href).searchParams.get('debug') === '1';
+$('#copy-diagnostics').hidden = !debugMode;
 const loopback = ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname);
 $('#network-note').textContent = loopback ? '当前是本机预览，其他设备无法访问此地址。' : '手机和电脑连接同一局域网，用配对码或扫码加入同一房间；网络隔离可能阻止直连。';
 $('#qr-note').textContent = loopback ? '当前二维码仅供本机预览，手机无法访问。' : '用同一局域网下的手机扫码。请保持电脑上的页面打开。';
@@ -224,7 +227,7 @@ function renderDevices(peers = state.link?.members || [], edges = state.link?.ed
     const remote = state.session?.sessions.get(peer.peerId)?.session.remote;
     if (remote) detail.textContent += ' · 单文件 ' + formatBytes(remote.maxFile);
     label.append(input, textElement('span', peer.label + ' · ' + (peer.kind || '浏览器')), detail); $('#device-list').append(label);
-    if ((!ready && edge) || edge?.lastError) {
+    if (debugMode && ((!ready && edge) || edge?.lastError)) {
       const info = document.createElement('details'); info.className = 'peer-diagnostics';
       info.dataset.peer = peer.peerId; info.open = expanded.has(peer.peerId);
       info.append(textElement('summary', peer.label + ' 的连接诊断'));
@@ -240,7 +243,7 @@ function renderDevices(peers = state.link?.members || [], edges = state.link?.ed
   connection(connected ? '已直连 ' + connected + ' 台设备' : blocked ? '直连未成功' : retrying ? '正在重新连接…' : peers.length ? '正在直连…' : '等待设备加入', connected > 0, !connected && blocked);
   $('#connection-detail').textContent = '文件发给勾选设备 · 聊天独立发送给房间所有设备';
   $('#reconnect').disabled = !peers.some(p => { const edge=edges.get(p.peerId); return !edge?.connected || (edge.room.chat && edge.chatChannel?.readyState !== 'open'); });
-  if (!connected && peers.length && [...edges.values()].some(edge => edge.blocked)) $('#signal-note').textContent = '部分设备未能直连，请检查网络和浏览器权限，再点「重新连接」。';
+  if (!connected && peers.length && [...edges.values()].some(edge => edge.blocked)) $('#signal-note').textContent = '暂时未能连接，请稍后重试。';
 }
 async function enter(room) {
   profile.remember(room); document.body.classList.add('has-room');

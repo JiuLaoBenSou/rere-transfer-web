@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="热热传：打开网页，把文件和文字传到身边的手机或电脑。同网设备之间点对点交换文件与文字。">
   <title>热热传 · 把文件传到身边</title><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261028-mobile"><script type="module" src="./workspace.js?v=0.8.1-pairing1"></script>
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261028-mobile"><script type="module" src="./workspace.js?v=0.8.1-ux1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -28,10 +28,11 @@
           <div class="room-identity"><strong id="self-device"></strong><button id="rename-device" class="quiet">改名</button><button id="show-qr" class="secondary">手机扫码</button></div><details id="invite-options" open><summary>邀请设备 · 查看配对码和链接</summary><div class="pairing-row"><div id="pairing-panel"><p class="pairing-label">在另一台电脑输入配对码</p><output id="pairing-code" aria-label="本房间的6位配对码"></output><p id="pairing-status" role="status"></p><button id="refresh-pair-code" class="secondary" hidden>获取新配对码</button></div></div>
           <details class="share-more"><summary>复制完整房间链接</summary><label for="invite-link" id="invite-label">在另一台设备打开此链接</label><div class="invite-row"><input id="invite-link" readonly><button id="copy-link" class="secondary">复制链接</button></div></details>
           </details>
-          <div class="room-tools"><span id="room-expiry"></span><button id="copy-diagnostics" class="quiet">复制连接诊断</button><button id="reconnect" class="quiet">重新连接</button><button id="leave-room" class="quiet">退出房间</button></div><p class="room-policy"><span id="room-limit">房间最多 6 台设备。</span><span id="network-note">正在检查访问方式…</span></p><p id="signal-note" role="status"></p><p id="resume-note" role="status"></p>
+          <div class="room-tools"><span id="room-expiry"></span><button id="copy-diagnostics" class="quiet" hidden>复制连接诊断</button><button id="reconnect" class="quiet">重新连接</button><button id="leave-room" class="quiet">退出房间</button></div><p class="room-policy"><span id="room-limit">房间最多 6 台设备。</span><span id="network-note">正在检查访问方式…</span></p><p id="signal-note" role="status"></p><p id="resume-note" role="status"></p>
         </div>
         <details class="join-link-option"><summary>使用已有房间链接</summary><form id="join-form" class="join-form" novalidate><label for="join-link" class="sr-only">房间链接</label><input id="join-link" type="url" maxlength="2048" autocomplete="off" placeholder="粘贴完整房间链接"><button class="secondary">加入房间</button></form></details>
       </section>
+      <p id="compatibility-note" class="prototype-note">部分网络环境下，Windows 与 iPhone 可能无法直连，兼容性待后续优化。</p>
       <p id="room-error" class="error-line" role="alert" hidden></p>
       <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden></button><button id="file-unread" class="quiet" hidden>收到文件 · 查看收件箱</button></div></div>
       <div class="workspace">
