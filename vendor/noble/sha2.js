@@ -5,9 +5,9 @@
  * {@link https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf | FIPS 180-4}.
  * @module
  */
-import { Chi, HashMD, Maj, SHA224_IV, SHA256_IV, SHA384_IV, SHA512_IV } from "./_md.js?v=lang9";
-import * as u64 from "./_u64.js?v=lang9";
-import { clean, createHasher, oidNist, rotr } from "./utils.js?v=lang9";
+import { Chi, HashMD, Maj, SHA224_IV, SHA256_IV, SHA384_IV, SHA512_IV } from "./_md.js?v=warmdrop1";
+import * as u64 from "./_u64.js?v=warmdrop1";
+import { clean, createHasher, oidNist, rotr } from "./utils.js?v=warmdrop1";
 /**
  * SHA-224 / SHA-256 round constants from RFC 6234 §5.1: the first 32 bits
  * of the cube roots of the first 64 primes (2..311).

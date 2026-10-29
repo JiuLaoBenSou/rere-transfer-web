@@ -1,7 +1,7 @@
-import i18next from './vendor/i18next/i18next.js?v=lang9';
-import LanguageDetector from './vendor/i18next/detector.js?v=lang9';
-import en from './locales-en.js?v=lang9';
-import {supportedLanguages,loadCatalog,localeCatalogs} from './locales.js?v=lang9';
+import i18next from './vendor/i18next/i18next.js?v=warmdrop1';
+import LanguageDetector from './vendor/i18next/detector.js?v=warmdrop1';
+import en from './locales-en.js?v=warmdrop1';
+import {supportedLanguages,loadCatalog,localeCatalogs} from './locales.js?v=warmdrop1';
 export function resolveLanguage({query,saved,languages=[]}={}){
  for(const value of[query,saved,...languages]){if(/^zh-(TW|HK|MO|Hant)(?:-|$)/i.test(value||''))return'zh-TW';if(/^zh(?:-|$)/i.test(value||''))return'zh-CN';const short=String(value||'').toLowerCase().split('-')[0];if(supportedLanguages.some(([code])=>code===short))return short;}return'zh-CN';
 }
@@ -16,7 +16,7 @@ export const t=translate;
 export function initPage(){
  if(!browser)return;
  document.documentElement.lang=language;
- if(language!=='zh-CN')for(const brand of document.querySelectorAll('.brand,.site-header>a:first-child')){for(const img of brand.querySelectorAll('img')){img.src='./rere-symbol.svg';img.width=40;img.height=40;img.style.width='40px';}const word=document.createElement('span');word.className='brand-wordmark';word.textContent=language==='zh-TW'?'熱熱傳':'Rere Transfer';brand.append(word);}
+ if(language!=='zh-CN')for(const brand of document.querySelectorAll('.brand,.site-header>a:first-child')){for(const img of brand.querySelectorAll('img')){img.src='./rere-symbol.svg';img.width=40;img.height=40;img.style.width='40px';}const word=document.createElement('span');word.className='brand-wordmark';word.textContent=language==='zh-TW'?'熱熱傳':'WarmDrop';brand.append(word);}
  const walker=document.createTreeWalker(document.documentElement,NodeFilter.SHOW_TEXT);const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
  for(const node of nodes){if(/^(SCRIPT|STYLE|NOSCRIPT)$/.test(node.parentElement?.tagName))continue;const raw=node.textContent,key=raw.trim();if(Object.hasOwn(en,key))node.textContent=raw.replace(key,t(key));}
  for(const node of document.querySelectorAll('[placeholder],[aria-label],[alt],meta[name="description"]'))for(const attr of['placeholder','aria-label','alt','content']){const text=node.getAttribute(attr);if(text&&Object.hasOwn(en,text))node.setAttribute(attr,t(text));}

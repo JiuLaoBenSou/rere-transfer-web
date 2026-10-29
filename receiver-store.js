@@ -1,6 +1,6 @@
-import {t} from './i18n.js?v=lang9';
+import {t} from './i18n.js?v=warmdrop1';
 // Codex / 2026-10-25. Ephemeral receiver storage. No server file payloads.
-import { randomId } from './id.js?v=lang9';
+import { randomId } from './id.js?v=warmdrop1';
 export const MEMORY_FILE = 32 * 1024 * 1024;
 export const MEMORY_INBOX = 64 * 1024 * 1024;
 export const DISK_FILE = 2 * 1024 * 1024 * 1024;

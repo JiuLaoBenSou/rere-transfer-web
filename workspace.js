@@ -1,16 +1,16 @@
-import {drawQR} from './vendor/reference/qr.js?v=lang9';
-import {t,initPage,getLanguage} from './i18n.js?v=lang9';
+import {drawQR} from './vendor/reference/qr.js?v=warmdrop1';
+import {t,initPage,getLanguage} from './i18n.js?v=warmdrop1';
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
-import { TransferSession, MAX_FILE } from './transfer.js?v=lang9';
-import { TransferRate, formatRate } from './transfer-rate.js?v=lang9';
-import { ReceiverStore } from './receiver-store.js?v=lang9';
-import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=lang9';
-import { GroupLink } from './group-link.js?v=lang9';
-import { RoomTransfers } from './room-transfers.js?v=lang9';
-import { createTransferMark } from './transfer-mark.js?v=lang9';
-import { apiURL, inviteURL, readInvite } from './app-config.js?v=lang9';
-import { DeviceProfile } from './device-profile.js?v=lang9';
-import { RoomChat } from './room-chat.js?v=lang9';
+import { TransferSession, MAX_FILE } from './transfer.js?v=warmdrop1';
+import { TransferRate, formatRate } from './transfer-rate.js?v=warmdrop1';
+import { ReceiverStore } from './receiver-store.js?v=warmdrop1';
+import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=warmdrop1';
+import { GroupLink } from './group-link.js?v=warmdrop1';
+import { RoomTransfers } from './room-transfers.js?v=warmdrop1';
+import { createTransferMark } from './transfer-mark.js?v=warmdrop1';
+import { apiURL, inviteURL, readInvite } from './app-config.js?v=warmdrop1';
+import { DeviceProfile } from './device-profile.js?v=warmdrop1';
+import { RoomChat } from './room-chat.js?v=warmdrop1';
 initPage();
 const $ = selector => document.querySelector(selector);
 // Internal tools are opt-in; ordinary invitations never carry this flag.

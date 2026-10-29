@@ -1,6 +1,6 @@
-import {t} from './i18n.js?v=lang9';
+import {t} from './i18n.js?v=warmdrop1';
 // Codex / 2026-10-25. Signaling is separate from file traffic; host owns negotiation.
-import { apiURL } from './app-config.js?v=lang9';
+import { apiURL } from './app-config.js?v=warmdrop1';
 const NEGOTIATION_WAIT = 30000;
 export const CONNECTION_BUILD = '0.8.1-pairing1';
 // ufrag is included on candidate events but may be omitted from SDP candidate lines.

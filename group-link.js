@@ -1,6 +1,6 @@
-import {t} from './i18n.js?v=lang9';
+import {t} from './i18n.js?v=warmdrop1';
 // Codex / 2026-10-26. One signaling socket; independent direct links per peer.
-import { RoomLink } from './room-link.js?v=lang9';
+import { RoomLink } from './room-link.js?v=warmdrop1';
 class PeerLink extends RoomLink {
   listen() {}
   request(action,method,data){return this.owner.request(action,method,{...data,to:this.target.peerId,fromEpoch:this.owner.epoch,toEpoch:this.target.epoch});}
