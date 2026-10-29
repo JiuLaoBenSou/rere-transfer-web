@@ -1,3 +1,4 @@
+.intro h1>span{display:inline-block}
 /* Codex / 2026-10-26. Persistent independent chat alongside selective file transfer. */
 .site-links{display:flex;gap:12px 20px;flex-wrap:wrap}.site-footer{display:block!important}.site-footer .footer-meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:14px;font-size:12px}.site-footer a{color:var(--muted);text-underline-offset:4px}.site-footer a:hover{color:var(--text)}.site-help{font-size:13px;color:var(--muted);margin-left:auto}.connection-extra:has(#connection-detail:empty){min-height:0;margin-block:8px}
 .brand img{display:block;width:139px;height:auto}.brand .logo-dark{display:none}

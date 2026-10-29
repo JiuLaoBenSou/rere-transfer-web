@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="热热传：同一网络下，打开网页即可互传文件和文字。无需安装或注册，支持多设备配对。">
   <title>热热传 · 局域网文件互传</title><link rel="canonical" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-pages"><script type="module" src="./workspace.js?v=0.8.1-pages1"></script>
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-autosend"><script type="module" src="./workspace.js?v=0.8.1-autosend1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -18,7 +18,7 @@
   <div class="app-shell">
     <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-logo-dark.svg" alt="热热传" width="147" height="48"><img class="logo-light" src="./rere-logo-light.svg" alt="热热传" width="147" height="48"></a><div class="design-controls" hidden><a href="./styles.html">五种风格</a><label for="theme-select" class="sr-only">页面风格</label><select id="theme-select"><option value="warm">01 亲切工具</option><option value="minimal">02 极简白</option><option value="studio">03 创作工作台</option><option value="privacy">04 安静深色</option><option value="bold">05 鲜明品牌</option><option value="ember">炉火暖色 · 试稿</option></select></div><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">使用说明</a></header>
     <main>
-      <section class="intro"><h1><span>创建房间，</span><span>互传文件和文字。</span></h1><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="intro"><h1><span>同一局域网，</span><span>文件直接传。</span></h1><p>局域网内传文件，不耗移动数据流量，不上传服务器。<br>打开网页和设备配对仍需联网。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
         <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"/></svg><div><h2 id="room-heading">连接身边的设备</h2><p>最多 6 台 · 同一网络</p></div></div>
         <button id="create-room" class="primary">创建房间</button>
@@ -39,8 +39,8 @@
         <section class="send-pane" aria-label="发送内容">
           <div class="section-heading"><h2>传文件</h2><span>只发给你选的设备</span></div>
           <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="房间中的设备" hidden><div class="devices-heading"><strong>文件发给</strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div></section>
-            <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"/></svg><h2>拖入文件</h2><label for="files" class="button primary picker-button">选择文件</label><input id="files" class="sr-only file-input" type="file" multiple><p class="drop-help">支持多选</p></div>
-            <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden><button id="send-files" class="primary" aria-describedby="file-send-hint" disabled>发送文件</button><button id="retry-files" class="secondary" hidden>重试未完成</button><button id="clear-files" class="quiet">清空选择</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
+            <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"/></svg><h2>拖入文件</h2><label for="files" class="button primary picker-button">选择文件</label><input id="files" class="sr-only file-input" type="file" multiple><p class="drop-help">放入即传 · 支持多选</p></div>
+            <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden><button id="retry-files" class="secondary" hidden>重试未完成</button><button id="clear-files" class="quiet">清空选择</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
           </div>
           <div class="send-feedback" hidden><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden></progress><div id="send-rates"></div><button id="cancel-send" class="quiet" hidden>停止发送</button></div>
         </section>

@@ -19,7 +19,7 @@ $('#qr-note').textContent = loopback ? '当前二维码仅供本机预览，手�
 $('#invite-label').textContent = loopback ? '在本机另一个浏览器窗口打开此链接' : '在另一台设备打开此链接，或用手机扫码';
 const store = new ReceiverStore();
 const profile = new DeviceProfile();
-const state = { room: null, link: null, session: null, chat: null, chatBusy: false, connected: false, busy: false, roomBusy: false, files: [], urls: new Map(), qrUrl: null, stopQueue: false, remote: null, chatQueue: [], currentChat: null, unread: 0 };
+const state = { room: null, link: null, session: null, chat: null, chatBusy: false, connected: false, busy: false, roomBusy: false, files: [], autoSendPending: false, urls: new Map(), qrUrl: null, stopQueue: false, remote: null, chatQueue: [], currentChat: null, unread: 0 };
 const ROOM_CACHE = 'rere-room-v1';
 const targets = new Set(), deviceResults = new Map(), knownPeers = new Set();
 const sendRates = new Map(), receiveRates = new Map();
@@ -54,14 +54,28 @@ function connection(label, connected = false, failed = false) {
   $('#connection-label').textContent = label;
   $('#connection-label').classList.toggle('connected', connected); $('#connection-label').classList.toggle('failed', failed); controls();
 }
+let autoSendScheduled = false;
+function fileRecipientsReady() {
+  if (!state.connected || !state.session) return false;
+  // An unavailable peer must not hold up delivery to other selected devices.
+  return !state.room?.group || [...targets].some(id => state.session.connected.includes(id));
+}
+function scheduleAutoSend() {
+  if (!state.autoSendPending || state.busy || autoSendScheduled || !fileRecipientsReady()) return;
+  autoSendScheduled = true;
+  // Connection and capability callbacks can render repeatedly in the same turn.
+  queueMicrotask(() => {
+    autoSendScheduled = false;
+    if (state.autoSendPending && !state.busy && fileRecipientsReady()) sendQueue();
+  });
+}
 function controls() {
   $('#create-room').disabled = state.roomBusy || !!state.room;
   $('#join-form button').disabled = state.roomBusy || !!state.room; $('#join-link').disabled = state.roomBusy || !!state.room;
   $('#pair-form button').disabled = state.roomBusy || !!state.room; $('#pair-code').disabled = state.roomBusy || !!state.room;
   $('#refresh-pair-code').disabled = state.roomBusy;
-  $('#send-files').disabled = !state.connected || state.busy || (state.room?.group && !targets.size) || !state.files.some(item => item.status !== 'done');
   $('#retry-files').hidden = !state.files.some(item => ['failed', 'cancelled'].includes(item.status));
-  $('#retry-files').disabled = !state.connected || state.busy;
+  $('#retry-files').disabled = !fileRecipientsReady() || state.busy;
   const chatReady = state.room?.group ? !!state.chat?.connected.length : state.connected && !state.busy;
   $('#send-text').disabled = !chatReady || !$('#text-draft').value.trim().length || state.chatQueue.length >= 20;
   $('#files').disabled = state.busy; $('#clear-files').disabled = state.busy; $('#text-draft').disabled = false;
@@ -69,12 +83,15 @@ function controls() {
   $('#reconnect').disabled = !state.room || (state.room.group ? !(state.link?.members || []).some(p => { const edge=state.link.edges.get(p.peerId); return !edge?.connected || (edge.room.chat && edge.chatChannel?.readyState !== 'open'); }) : state.connected);
   document.querySelectorAll('.device-row input').forEach(input => { input.disabled = state.busy; });
   const pending = state.files.some(item => item.status !== 'done');
-  const unavailable = state.busy ? '文件传输中，可随时停止。'
-    : !state.room ? '请先创建或加入同一个房间，连接后才能发送。'
-    : !state.connected ? (state.link?.peer ? '另一台设备已加入，正在建立直连；连接成功后即可发送。' : '等待另一台设备加入此房间，连接后即可发送。') : '';
-  $('#file-send-hint').textContent = unavailable || (!state.files.length ? '先选择文件，再点击「发送文件」。'
-    : pending ? (state.room?.group ? '发送给 ' + targets.size + ' 台设备。' : '已就绪。点击「发送文件」，对方自动接收。') : '这些文件已发送完成。需要再传一次，请重新选择文件。');
+  $('#file-send-hint').textContent = state.busy ? '文件传输中，可随时停止。'
+    : pending && !state.autoSendPending ? '未完成的文件请点击「重试未完成」。'
+    : !state.room ? '请先创建或加入房间；已选文件将在连接后自动发送。'
+    : state.room.group && !targets.size ? '请勾选接收设备；已选文件将在连接后自动发送。'
+    : !fileRecipientsReady() ? '等待所选设备连接；连接后自动发送已选文件。'
+    : !state.files.length ? '拖入或选择文件，自动发送给勾选的设备。'
+    : pending ? '即将自动发送…' : '已发送完成。重新选择文件可再次发送。';
   $('#text-send-hint').textContent = !chatReady ? (state.room ? '等待连接…' : '连接另一台设备，开始聊天。') : 'Enter 发送 · Shift+Enter 换行';
+  scheduleAutoSend();
 }
 async function api(route, { method = 'GET', data, auth = true, keepalive = false } = {}) {
   const response = await fetch(apiURL(route), { method, headers: { 'Content-Type': 'application/json', ...(auth && state.room ? { Authorization: 'Bearer ' + state.room.token } : {}) }, body: data === undefined ? undefined : JSON.stringify(data), keepalive });
@@ -98,10 +115,10 @@ function selected(files) {
   if (state.busy) return;
   $('.send-feedback').hidden = true; $('#send-status').textContent = ''; $('#send-progress').value = 0;
   const list = Array.from(files);
-  state.files = []; renderFiles();
+  state.autoSendPending = false; state.files = []; renderFiles();
   if (list.length > 20) { error('一次最多选择 20 个文件。'); return; }
   if (list.some(file => file.size > MAX_FILE)) { error('单文件超过本版 2 GiB 上限，请选择较小的文件。'); return; }
-  error(); state.files = list.map(file => ({ file, status: 'pending' })); renderFiles();
+  error(); state.files = list.map(file => ({ file, status: 'pending' })); state.autoSendPending = list.length > 0; renderFiles();
 }
 $('#files').addEventListener('change', () => {
   const files = Array.from($('#files').files);
@@ -122,6 +139,9 @@ async function sending(task) {
   finally { state.busy = false; renderFiles(); pumpChat(); }
 }
 function sendQueue() {
+  if (state.busy || !fileRecipientsReady()) return;
+  // One selection authorizes one attempt; errors and cancellation require retry.
+  state.autoSendPending = false;
   const recipients = [...targets];
   sending(async session => {
     for (const item of state.files) {
@@ -139,7 +159,7 @@ function sendQueue() {
     sendStatus(state.stopQueue ? '发送队列已停止。未完成的文件可再次发送。' : '队列发送完成，对方已接收并校验。');
   });
 }
-$('#send-files').addEventListener('click', sendQueue); $('#retry-files').addEventListener('click', sendQueue);
+$('#retry-files').addEventListener('click', sendQueue);
 function chatBubble(text, mine = false, sender = '对方') {
   $('#chat-empty').hidden = true;
   const item = document.createElement('article'); item.className = 'chat-message ' + (mine ? 'chat-mine' : 'chat-remote');
@@ -317,6 +337,9 @@ async function enter(room) {
   controls(); updateExpiry();
 }
 function cleanup(label = '尚未连接') {
+  state.autoSendPending = false;
+  state.stopQueue = true;
+  for (const item of state.files) if (item.status === 'pending') item.status = 'cancelled';
   document.body.classList.remove('has-room');
   try { sessionStorage.removeItem(ROOM_CACHE); } catch {}
   for (const message of state.chatQueue) message.node.querySelector('.chat-status').textContent = '未发送 · 房间已结束';
