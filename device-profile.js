@@ -1,5 +1,5 @@
 // Codex / 2026-10-26. Browser-local names and room-scoped re-entry credentials.
-import {getLanguage} from './i18n.js?v=usage2';
+import {getLanguage} from './i18n.js?v=usage3';
 const KEY='rere-device-profile-v1';
 const kitchenNames={
  'zh-CN':['平底锅','盘子','碗','勺子','筷子','锅铲'],

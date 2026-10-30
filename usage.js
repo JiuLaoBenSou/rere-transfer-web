@@ -1,6 +1,6 @@
-import {apiURL} from './app-config.js?v=usage2';
+import {apiURL} from './app-config.js?v=usage3';
 export class UsageReporter {
- constructor(room,{fetcher=globalThis.fetch,url=apiURL,enabled=globalThis.location?.protocol==='https:'}={}){this.room=room;this.fetcher=fetcher;this.url=url;this.enabled=enabled;this.pending=new Set();this.done=new Set();}
+ constructor(room,{fetcher=globalThis.fetch?.bind(globalThis),url=apiURL,enabled=globalThis.location?.protocol==='https:'}={}){this.room=room;this.fetcher=fetcher;this.url=url;this.enabled=enabled;this.pending=new Set();this.done=new Set();}
  async send(data){
   if(!this.enabled||!this.room?.group)return false;
   const key=JSON.stringify(data);if(this.done.has(key)||this.pending.has(key)||this.done.size>=500)return false;

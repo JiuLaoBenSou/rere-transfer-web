@@ -1,4 +1,4 @@
-import en from './locales-en.js?v=usage2';
+import en from './locales-en.js?v=usage3';
 export const supportedLanguages=[['zh-CN','简体中文'],['zh-TW','繁體中文'],['en','English'],['ja','日本語'],['ko','한국어'],['es','Español'],['fr','Français'],['de','Deutsch'],['pt','Português']];
 export const localeCatalogs={en};
 export async function loadCatalog(language){
