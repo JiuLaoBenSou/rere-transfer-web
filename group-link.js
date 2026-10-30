@@ -1,6 +1,7 @@
-import {t} from './i18n.js?v=warmdrop1';
+import {deviceLabel} from './device-profile.js?v=nicknames1';
+import {t} from './i18n.js?v=nicknames1';
 // Codex / 2026-10-26. One signaling socket; independent direct links per peer.
-import { RoomLink } from './room-link.js?v=warmdrop1';
+import { RoomLink } from './room-link.js?v=nicknames1';
 class PeerLink extends RoomLink {
   listen() {}
   request(action,method,data){return this.owner.request(action,method,{...data,to:this.target.peerId,fromEpoch:this.owner.epoch,toEpoch:this.target.epoch});}
@@ -12,7 +13,7 @@ export class GroupLink extends RoomLink {
     if(message.type==='closed')return super.handle(message);
     if(message.type==='members'){
       if(this.epoch!==message.selfEpoch){for(const edge of this.edges.values())edge.dispose();this.edges.clear();}
-      this.epoch=message.selfEpoch;this.members=message.peers;
+      this.epoch=message.selfEpoch;this.members=message.peers.map(peer=>({...peer,label:deviceLabel(peer)}));
       if(message.self)this.hooks.onSelf?.(message.self);
       for(const[id,edge]of this.edges)if(!this.members.some(p=>p.peerId===id)){edge.dispose();this.edges.delete(id);this.hooks.onRemoved?.(id);}
       for(const peer of this.members){

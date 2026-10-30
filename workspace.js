@@ -1,16 +1,16 @@
-import {drawQR} from './vendor/reference/qr.js?v=warmdrop1';
-import {t,initPage,getLanguage} from './i18n.js?v=warmdrop1';
+import {drawQR} from './vendor/reference/qr.js?v=nicknames1';
+import {t,initPage,getLanguage} from './i18n.js?v=nicknames1';
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
-import { TransferSession, MAX_FILE } from './transfer.js?v=warmdrop1';
-import { TransferRate, formatRate } from './transfer-rate.js?v=warmdrop1';
-import { ReceiverStore } from './receiver-store.js?v=warmdrop1';
-import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=warmdrop1';
-import { GroupLink } from './group-link.js?v=warmdrop1';
-import { RoomTransfers } from './room-transfers.js?v=warmdrop1';
-import { createTransferMark } from './transfer-mark.js?v=warmdrop1';
-import { apiURL, inviteURL, readInvite } from './app-config.js?v=warmdrop1';
-import { DeviceProfile } from './device-profile.js?v=warmdrop1';
-import { RoomChat } from './room-chat.js?v=warmdrop1';
+import { TransferSession, MAX_FILE } from './transfer.js?v=nicknames1';
+import { TransferRate, formatRate } from './transfer-rate.js?v=nicknames1';
+import { ReceiverStore } from './receiver-store.js?v=nicknames1';
+import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=nicknames1';
+import { GroupLink } from './group-link.js?v=nicknames1';
+import { RoomTransfers } from './room-transfers.js?v=nicknames1';
+import { createTransferMark } from './transfer-mark.js?v=nicknames1';
+import { apiURL, inviteURL, readInvite } from './app-config.js?v=nicknames1';
+import { deviceLabel, DeviceProfile } from './device-profile.js?v=nicknames1';
+import { RoomChat } from './room-chat.js?v=nicknames1';
 initPage();
 const $ = selector => document.querySelector(selector);
 // Internal tools are opt-in; ordinary invitations never carry this flag.
@@ -261,7 +261,7 @@ function createSession(peer) {
 }
 function renderDevices(peers = state.link?.members || [], edges = state.link?.edges || new Map()) {
   if (!state.room?.group) return;
-  $('#devices-panel').hidden = false; $('#self-device').textContent = state.room.label + ' · ' + (state.room.kind || t('浏览器')) + t('（本机）');
+  $('#devices-panel').hidden = false; $('#self-device').textContent = deviceLabel(state.room) + ' · ' + (state.room.kind || t('浏览器')) + t('（本机）');
   $('#device-count').textContent = (peers.length + 1) + t(' / 6 台设备');
   const live = new Set(peers.map(p => p.peerId)); for (const id of targets) if (!live.has(id)) targets.delete(id);
   const expanded = new Set([...$('#device-list').querySelectorAll('details[open]')].map(node => node.dataset.peer));
@@ -390,7 +390,7 @@ async function joinInvite(value) {
   const {roomId: id, group} = invite;
   await enter(await (await api('/api/' + (group ? 'groups' : 'rooms') + '/' + id + '/join', { method: 'POST', data: group ? profile.joinData(id) : {}, auth: false })).json());
 }
-$('#rename-device').addEventListener('click', () => { $('#device-name').value = state.room?.label || ''; $('#name-dialog').showModal(); $('#device-name').focus(); });
+$('#rename-device').addEventListener('click', () => { $('#device-name').value = deviceLabel(state.room); $('#name-dialog').showModal(); $('#device-name').focus(); });
 $('#name-form').addEventListener('submit', async event => { event.preventDefault(); if (!state.room?.group) return; const label = $('#device-name').value.trim(); try { const result = await (await api(roomPath(state.room) + '/profile', {method:'POST',data:{label}})).json(); Object.assign(state.room,result); profile.setName(result.label); $('#name-dialog').close(); renderDevices(); } catch (failure) { $('#name-error').textContent = t(failure.message); } });
 $('#cancel-name').addEventListener('click', () => $('#name-dialog').close());
 $('#join-form').addEventListener('submit', event => { event.preventDefault(); roomAction(() => joinInvite($('#join-link').value.trim())); });

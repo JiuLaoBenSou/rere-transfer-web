@@ -1,4 +1,4 @@
-import en from './locales-en.js?v=warmdrop1';
+import en from './locales-en.js?v=nicknames1';
 export const supportedLanguages=[['zh-CN','简体中文'],['zh-TW','繁體中文'],['en','English'],['ja','日本語'],['ko','한국어'],['es','Español'],['fr','Français'],['de','Deutsch'],['pt','Português']];
 export const localeCatalogs={en};
 export async function loadCatalog(language){

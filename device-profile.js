@@ -1,5 +1,26 @@
 // Codex / 2026-10-26. Browser-local names and room-scoped re-entry credentials.
+import {getLanguage} from './i18n.js?v=nicknames1';
 const KEY='rere-device-profile-v1';
+const kitchenNames={
+ 'zh-CN':['平底锅','盘子','碗','勺子','筷子','锅铲'],
+ 'zh-TW':['平底鍋','盤子','碗','湯匙','筷子','鍋鏟'],
+ en:['Kettle','Mug','Toaster','Skillet','Whisk','Teapot'],
+ ja:['急須','湯のみ','お茶碗','しゃもじ','お弁当箱','せいろ'],
+ ko:['뚝배기','밥그릇','국자','수저','주전자','찜기'],
+ es:['Cafetera','Taza','Paellera','Mortero','Jarra','Cazuela'],
+ fr:['Cocotte','Bol','Fouet','Crêpière','Théière','Marmite'],
+ de:['Teekanne','Tasse','Backblech','Kochlöffel','Schneebesen','Kochtopf'],
+ pt:['Chaleira','Caneca','Frigideira','Colher','Panela','Cafeteira'],
+};
+// Each locale has its own kitchen theme, not six literal translations.
+// Array slots identify the same devices; canonical room names stay unchanged.
+// Missing customName supports rooms created before name-origin metadata existed.
+export function deviceLabel(peer,language=getLanguage()){
+ const label=peer?.label||'';if(peer?.customName)return label;
+ const match=/^(平底锅|盘子|碗|勺子|筷子|锅铲)( \d+)?$/.exec(label);
+ if(!match)return label;
+ return (kitchenNames[language]||kitchenNames.en)[kitchenNames['zh-CN'].indexOf(match[1])]+(match[2]||'');
+}
 export function deviceKind(nav=globalThis.navigator||{}){
  const ua=nav.userAgent||'',platform=nav.userAgentData?.platform||nav.platform||'';
  if(/iPhone/i.test(ua))return'iPhone';if(/iPad/i.test(ua)||(/Mac/i.test(platform+ua)&&nav.maxTouchPoints>1))return'iPad';

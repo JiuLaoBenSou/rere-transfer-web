@@ -1,2 +1,2 @@
-import {initPage} from './i18n.js?v=warmdrop1';
+import {initPage} from './i18n.js?v=nicknames1';
 initPage();
