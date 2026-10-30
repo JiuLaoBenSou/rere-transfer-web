@@ -441,5 +441,9 @@ export default {
   "语言选择保存在此浏览器，直到你更改语言或清除本站数据。": "Votre préférence linguistique reste dans ce navigateur jusqu'à ce que vous la modifiiez ou effaciez les données du site.",
   "语言": "Langue",
   "切换语言将重新加载页面。": "Changer de langue recharge la page.",
-  "已直连 {{count}} 台设备": "Connexion à {{count}} appareils"
+  "已直连 {{count}} 台设备": "Connexion à {{count}} appareils",
+"本站使用自建匿名计数，记录新建房间、首次直连成功和文件校验完成的接收次数，并分开统计显式标记的测试房间；不统计独立人数。计数按房间创建日（UTC）汇总，统计失败可能漏记。": "Nos compteurs anonymes internes mesurent les nouvelles salles, les premières connexions directes entre appareils et les réceptions de fichiers vérifiées. Les salles explicitement marquées comme tests sont comptées séparément. Il ne s’agit pas de personnes uniques. Les données sont regroupées par date de création de la salle (UTC) ; des échecs de signalement peuvent réduire les totaux.",
+"统计不记录文件名、内容、大小、聊天、设备昵称或完整网络地址。为去重保存房间内事件的不可读摘要，不用于跨房间识别；应用统计与去重记录最多保留30天，到期清理。连接和接收完成由浏览器报告，不等于真人数、独立文件数或已下载保存。": "Les statistiques ne contiennent ni noms, contenus ou tailles de fichiers, ni discussions, noms d’appareils ou adresses réseau complètes. Des empreintes opaques évitent les doublons dans une salle, sans identification entre salles. Compteurs et empreintes sont supprimés sous 30 jours au maximum. Les déclarations du navigateur ne prouvent ni activité humaine, ni fichiers uniques, ni téléchargements enregistrés.",
+"房间服务的持久化应用日志在本项目配置中关闭。": "Les journaux applicatifs persistants du service de salles sont désactivés dans la configuration de ce projet.",
+"更新日期：2026 年 10 月 31 日 · 适用于热热传当前网页版": "Mise à jour : 31 octobre 2026 · S'applique à la version Web actuelle de WarmDrop"
 };

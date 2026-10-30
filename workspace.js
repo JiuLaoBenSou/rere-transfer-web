@@ -1,16 +1,17 @@
-import {drawQR} from './vendor/reference/qr.js?v=nicknames1';
-import {t,initPage,getLanguage} from './i18n.js?v=nicknames1';
+import {UsageReporter} from './usage.js?v=usage1';
+import {drawQR} from './vendor/reference/qr.js?v=usage1';
+import {t,initPage,getLanguage} from './i18n.js?v=usage1';
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
-import { TransferSession, MAX_FILE } from './transfer.js?v=nicknames1';
-import { TransferRate, formatRate } from './transfer-rate.js?v=nicknames1';
-import { ReceiverStore } from './receiver-store.js?v=nicknames1';
-import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=nicknames1';
-import { GroupLink } from './group-link.js?v=nicknames1';
-import { RoomTransfers } from './room-transfers.js?v=nicknames1';
-import { createTransferMark } from './transfer-mark.js?v=nicknames1';
-import { apiURL, inviteURL, readInvite } from './app-config.js?v=nicknames1';
-import { deviceLabel, DeviceProfile } from './device-profile.js?v=nicknames1';
-import { RoomChat } from './room-chat.js?v=nicknames1';
+import { TransferSession, MAX_FILE } from './transfer.js?v=usage1';
+import { TransferRate, formatRate } from './transfer-rate.js?v=usage1';
+import { ReceiverStore } from './receiver-store.js?v=usage1';
+import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=usage1';
+import { GroupLink } from './group-link.js?v=usage1';
+import { RoomTransfers } from './room-transfers.js?v=usage1';
+import { createTransferMark } from './transfer-mark.js?v=usage1';
+import { apiURL, inviteURL, readInvite } from './app-config.js?v=usage1';
+import { deviceLabel, DeviceProfile } from './device-profile.js?v=usage1';
+import { RoomChat } from './room-chat.js?v=usage1';
 initPage();
 const $ = selector => document.querySelector(selector);
 // Internal tools are opt-in; ordinary invitations never carry this flag.
@@ -240,7 +241,7 @@ $('#clear-inbox').addEventListener('click', clearInbox);
 function createSession(peer) {
   let sendEntry, prepareStarted = 0, prepareSeconds = 0;
   const session = new TransferSession(null, {
-    onOffer: meta => onOffer(meta, session, peer), onReceived: result => { onReceived(peer ? { ...result, sender: peer.label } : result); queueMicrotask(controls); }, onSendStatus: sendStatus,
+    onOffer: meta => onOffer(meta, session, peer), onReceived: result => { if(result.kind==='file')state.usage?.fileReceived(result.id); onReceived(peer ? { ...result, sender: peer.label } : result); queueMicrotask(controls); }, onSendStatus: sendStatus,
     onLocalCapabilities: capacity, onRemoteCapabilities: value => { if (peer) renderDevices(); else state.remote = value; capacity(); },
     onPrepareStart: () => { prepareStarted = performance.now(); prepareSeconds = 0; sendEntry = null; },
     onPrepareProgress: (bytes, total) => { prepareSeconds = (performance.now() - prepareStarted) / 1000; sendStatus(t('正在准备校验 ') + Math.round(bytes / total * 100) + '%…'); },
@@ -268,6 +269,7 @@ function renderDevices(peers = state.link?.members || [], edges = state.link?.ed
   $('#device-list').replaceChildren();
   for (const peer of peers) {
     const edge = edges.get(peer.peerId), ready = !!edge?.connected;
+    if(ready)state.usage?.connection(peer.peerId);
     const label = document.createElement('label'); label.className = 'device-row'; label.dataset.peer = peer.peerId;
     const input = document.createElement('input'); input.type = 'checkbox'; input.checked = targets.has(peer.peerId); input.disabled = state.busy;
     input.setAttribute('aria-label', t('文件发给') + peer.label);
@@ -299,7 +301,7 @@ async function enter(room) {
   const resumeId = globalThis.crypto.randomUUID?.() || String(Date.now()) + Math.random();
   try { sessionStorage.setItem(ROOM_CACHE, JSON.stringify({ room, resumeId })); } catch {}
   const pageUrl = new URL(location.href); pageUrl.searchParams.delete('group'); pageUrl.searchParams.delete('room'); pageUrl.hash = (room.group ? 'group=' : 'room=') + room.roomId; history.replaceState({ rereResume: resumeId }, '', pageUrl);
-  state.room = room; state.remote = null;
+  state.room = room; state.usage = new UsageReporter(room); state.remote = null;
   targets.clear(); deviceResults.clear(); knownPeers.clear();
   state.session = room.group ? new RoomTransfers((id, result) => { deviceResults.set(id, result); renderDevices(); }) : createSession();
   state.chat = room.group ? new RoomChat(room.peerId, { onMessage: message => { const peer = state.link?.members.find(p => p.peerId === message.from); chatBubble(message.text, false, peer?.label || t('房间设备')); }, onChange: () => { controls(); pumpChat(); } }) : null;
@@ -363,7 +365,7 @@ async function roomAction(action) {
   } catch (e) { if (state.room) { await api(roomPath(state.room), { method: 'DELETE' }).catch(() => {}); cleanup(); } error(e.message); }
   finally { state.roomBusy = false; controls(); }
 }
-$('#create-room').addEventListener('click', () => roomAction(async () => enter(await (await api('/api/groups', { method: 'POST', data: profile.joinData(), auth: false })).json())));
+$('#create-room').addEventListener('click', () => roomAction(async () => enter(await (await api('/api/groups', { method: 'POST', data: {...profile.joinData(),usageMode:new URL(location.href).searchParams.get('stats')==='test'?'test':'production'}, auth: false })).json())));
 $('#pair-form').addEventListener('submit', event => {
   event.preventDefault(); const code = $('#pair-code').value.replace(/\s/g, '');
   roomAction(async () => { if (!/^\d{6}$/.test(code)) throw new Error(t('请输入 6 位数字配对码。')); const room = await (await api('/api/pair', { method: 'POST', data: { code, ...profile.pairData(code) }, auth: false })).json(); profile.remember(room, code); await enter(room); });

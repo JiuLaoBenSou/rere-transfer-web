@@ -441,5 +441,9 @@ export default {
   "语言选择保存在此浏览器，直到你更改语言或清除本站数据。": "Your language preference stays in this browser until you change it or clear site data.",
   "语言": "Language",
   "切换语言将重新加载页面。": "Switching language reloads the page.",
-  "已直连 {{count}} 台设备": "Connected to {{count}} devices"
+  "已直连 {{count}} 台设备": "Connected to {{count}} devices",
+"本站使用自建匿名计数，记录新建房间、首次直连成功和文件校验完成的接收次数，并分开统计显式标记的测试房间；不统计独立人数。计数按房间创建日（UTC）汇总，统计失败可能漏记。": "We use first-party anonymous counters for new rooms, first successful direct device links and verified file receipts, with explicitly marked test rooms counted separately. These are not unique people. Counts are grouped by room creation day (UTC); reporting failures can cause undercounts.",
+"统计不记录文件名、内容、大小、聊天、设备昵称或完整网络地址。为去重保存房间内事件的不可读摘要，不用于跨房间识别；应用统计与去重记录最多保留30天，到期清理。连接和接收完成由浏览器报告，不等于真人数、独立文件数或已下载保存。": "Statistics do not record file names, contents, sizes, chat, device nicknames or full network addresses. Opaque digests of room-scoped events prevent duplicate counts without identifying devices across rooms. Application counters and deduplication records are kept for up to 30 days, then cleared. Browser-reported connections and file receipts do not prove human activity, unique files or saved downloads.",
+"房间服务的持久化应用日志在本项目配置中关闭。": "Persistent application logs for the room service are disabled in this project configuration.",
+"更新日期：2026 年 10 月 31 日 · 适用于热热传当前网页版": "Updated: October 31, 2026 · Applies to the current web version of WarmDrop"
 };

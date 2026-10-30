@@ -441,5 +441,9 @@ export default {
   "语言选择保存在此浏览器，直到你更改语言或清除本站数据。": "Su preferencia de idioma permanece en este navegador hasta que la cambie o borre los datos del sitio.",
   "语言": "Idioma",
   "切换语言将重新加载页面。": "Cambiar de idioma recarga la página.",
-  "已直连 {{count}} 台设备": "Conectado a {{count}} dispositivos"
+  "已直连 {{count}} 台设备": "Conectado a {{count}} dispositivos",
+"本站使用自建匿名计数，记录新建房间、首次直连成功和文件校验完成的接收次数，并分开统计显式标记的测试房间；不统计独立人数。计数按房间创建日（UTC）汇总，统计失败可能漏记。": "Usamos contadores anónimos propios para salas nuevas, primeras conexiones directas entre dispositivos y recepciones de archivos verificadas. Las salas marcadas de prueba se cuentan aparte. No son personas únicas. Se agrupan por fecha de creación de la sala (UTC); los fallos de envío pueden causar recuentos incompletos.",
+"统计不记录文件名、内容、大小、聊天、设备昵称或完整网络地址。为去重保存房间内事件的不可读摘要，不用于跨房间识别；应用统计与去重记录最多保留30天，到期清理。连接和接收完成由浏览器报告，不等于真人数、独立文件数或已下载保存。": "Las estadísticas no registran nombres, contenidos ni tamaños de archivos, chats, nombres de dispositivos ni direcciones de red completas. Se guardan resúmenes opacos de eventos para evitar duplicados dentro de cada sala, sin identificar dispositivos entre salas. Los recuentos y registros de deduplicación se eliminan en un máximo de 30 días. Los informes del navegador no prueban usuarios humanos, archivos únicos ni descargas guardadas.",
+"房间服务的持久化应用日志在本项目配置中关闭。": "Los registros persistentes de la aplicación del servicio de salas están desactivados en la configuración de este proyecto.",
+"更新日期：2026 年 10 月 31 日 · 适用于热热传当前网页版": "Actualizado: 31 de octubre de 2026 · Aplica a la versión web actual de WarmDrop"
 };

@@ -441,5 +441,9 @@ export default {
   "语言选择保存在此浏览器，直到你更改语言或清除本站数据。": "Ihre Spracheinstellung bleibt in diesem Browser erhalten, bis Sie sie ändern oder Site-Daten löschen.",
   "语言": "Sprache",
   "切换语言将重新加载页面。": "Beim Sprachwechsel wird die Seite neu geladen.",
-  "已直连 {{count}} 台设备": "Verbundene Geräte: {{count}}"
+  "已直连 {{count}} 台设备": "Verbundene Geräte: {{count}}",
+"本站使用自建匿名计数，记录新建房间、首次直连成功和文件校验完成的接收次数，并分开统计显式标记的测试房间；不统计独立人数。计数按房间创建日（UTC）汇总，统计失败可能漏记。": "Eigene anonyme Zähler erfassen neue Räume, erstmals erfolgreiche Direktverbindungen zwischen Geräten und geprüfte Dateiempfänge. Explizit markierte Testräume werden getrennt gezählt. Das sind keine eindeutigen Personen. Die Gruppierung erfolgt nach Raumerstellungstag (UTC); fehlgeschlagene Meldungen können zu Unterzählungen führen.",
+"统计不记录文件名、内容、大小、聊天、设备昵称或完整网络地址。为去重保存房间内事件的不可读摘要，不用于跨房间识别；应用统计与去重记录最多保留30天，到期清理。连接和接收完成由浏览器报告，不等于真人数、独立文件数或已下载保存。": "Die Statistik speichert keine Dateinamen, Inhalte, Größen, Chats, Gerätenamen oder vollständigen Netzwerkadressen. Undurchsichtige Ereignisprüfwerte verhindern Doppelzählungen innerhalb eines Raums, ohne raumübergreifende Wiedererkennung. Zähler und Prüfwerte werden nach höchstens 30 Tagen gelöscht. Browsermeldungen belegen weder menschliche Nutzer noch eindeutige Dateien oder gespeicherte Downloads.",
+"房间服务的持久化应用日志在本项目配置中关闭。": "Dauerhafte Anwendungsprotokolle des Raumdienstes sind in dieser Projektkonfiguration deaktiviert.",
+"更新日期：2026 年 10 月 31 日 · 适用于热热传当前网页版": "Aktualisiert: 31. Oktober 2026 · Gilt für die aktuelle Webversion von WarmDrop"
 };

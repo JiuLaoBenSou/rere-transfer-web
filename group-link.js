@@ -1,7 +1,7 @@
-import {deviceLabel} from './device-profile.js?v=nicknames1';
-import {t} from './i18n.js?v=nicknames1';
+import {deviceLabel} from './device-profile.js?v=usage1';
+import {t} from './i18n.js?v=usage1';
 // Codex / 2026-10-26. One signaling socket; independent direct links per peer.
-import { RoomLink } from './room-link.js?v=nicknames1';
+import { RoomLink } from './room-link.js?v=usage1';
 class PeerLink extends RoomLink {
   listen() {}
   request(action,method,data){return this.owner.request(action,method,{...data,to:this.target.peerId,fromEpoch:this.owner.epoch,toEpoch:this.target.epoch});}
