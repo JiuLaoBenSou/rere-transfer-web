@@ -1,17 +1,17 @@
-import {UsageReporter} from './usage.js?v=usage3';
-import {drawQR} from './vendor/reference/qr.js?v=usage3';
-import {t,initPage,getLanguage} from './i18n.js?v=usage3';
+import {UsageReporter} from './usage.js?v=feedback1';
+import {drawQR} from './vendor/reference/qr.js?v=feedback1';
+import {t,initPage,getLanguage} from './i18n.js?v=feedback1';
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
-import { TransferSession, MAX_FILE } from './transfer.js?v=usage3';
-import { TransferRate, formatRate } from './transfer-rate.js?v=usage3';
-import { ReceiverStore } from './receiver-store.js?v=usage3';
-import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=usage3';
-import { GroupLink } from './group-link.js?v=usage3';
-import { RoomTransfers } from './room-transfers.js?v=usage3';
-import { createTransferMark } from './transfer-mark.js?v=usage3';
-import { apiURL, inviteURL, readInvite } from './app-config.js?v=usage3';
-import { deviceLabel, DeviceProfile } from './device-profile.js?v=usage3';
-import { RoomChat } from './room-chat.js?v=usage3';
+import { TransferSession, MAX_FILE } from './transfer.js?v=feedback1';
+import { TransferRate, formatRate } from './transfer-rate.js?v=feedback1';
+import { ReceiverStore } from './receiver-store.js?v=feedback1';
+import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=feedback1';
+import { GroupLink } from './group-link.js?v=feedback1';
+import { RoomTransfers } from './room-transfers.js?v=feedback1';
+import { createTransferMark } from './transfer-mark.js?v=feedback1';
+import { apiURL, inviteURL, readInvite } from './app-config.js?v=feedback1';
+import { deviceLabel, DeviceProfile } from './device-profile.js?v=feedback1';
+import { RoomChat } from './room-chat.js?v=feedback1';
 initPage();
 const $ = selector => document.querySelector(selector);
 // Internal tools are opt-in; ordinary invitations never carry this flag.

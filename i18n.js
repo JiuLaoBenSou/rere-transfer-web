@@ -1,7 +1,7 @@
-import i18next from './vendor/i18next/i18next.js?v=usage3';
-import LanguageDetector from './vendor/i18next/detector.js?v=usage3';
-import en from './locales-en.js?v=usage3';
-import {supportedLanguages,loadCatalog,localeCatalogs} from './locales.js?v=usage3';
+import i18next from './vendor/i18next/i18next.js?v=feedback1';
+import LanguageDetector from './vendor/i18next/detector.js?v=feedback1';
+import en from './locales-en.js?v=feedback1';
+import {supportedLanguages,loadCatalog,localeCatalogs} from './locales.js?v=feedback1';
 export function resolveLanguage({query,saved,languages=[]}={}){
  for(const value of[query,saved,...languages]){if(/^zh-(TW|HK|MO|Hant)(?:-|$)/i.test(value||''))return'zh-TW';if(/^zh(?:-|$)/i.test(value||''))return'zh-CN';const short=String(value||'').toLowerCase().split('-')[0];if(supportedLanguages.some(([code])=>code===short))return short;}return'zh-CN';
 }
@@ -26,6 +26,6 @@ export function initPage(){
   const label=document.createElement('label');label.className='language-control';label.textContent='Language ';
   const select=document.createElement('select');select.id='language-select';select.setAttribute('aria-label','Language');
   for(const[value,text]of supportedLanguages){const option=new Option(text,value);select.append(option);}select.value=language;
-  select.title=t('切换语言将重新加载页面。');select.addEventListener('change',()=>{if(window.canChangeLanguage&&!window.canChangeLanguage()){select.value=language;return;}try{localStorage.setItem('rere-language',select.value);}catch{}const url=new URL(location.href);url.searchParams.set('lang',select.value);location.assign(url.href);});label.append(select);const actions=document.createElement('div');actions.className='header-actions';const help=header.querySelector('.site-help,.back');if(help)actions.append(help);actions.append(label);header.append(actions);
+  select.title=t('切换语言将重新加载页面。');select.addEventListener('change',()=>{if(window.canChangeLanguage&&!window.canChangeLanguage()){select.value=language;return;}try{localStorage.setItem('rere-language',select.value);}catch{}const url=new URL(location.href);url.searchParams.set('lang',select.value);location.assign(url.href);});label.append(select);const actions=document.createElement('div');actions.className='header-actions';const feedback=header.querySelector('.site-feedback');if(feedback)actions.append(feedback);const help=header.querySelector('.site-help,.back');if(help)actions.append(help);actions.append(label);header.append(actions);
  }
 }

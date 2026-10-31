@@ -1,5 +1,16 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer"><title>联系热热传</title><meta name="description" content="联系热热传作者，反馈连接、传输、隐私或权利问题。"><link rel="canonical" href="https://rerechuan.com/contact.html"><link rel="icon" href="./rere-symbol.svg"><link rel="stylesheet" href="./site-pages.css"><script type="module" src="./static-i18n.js?v=warmdrop1"></script></head><body><header class="site-header"><a href="./" aria-label="热热传首页"><img src="./rere-logo-dark.svg" alt="热热传" width="147" height="48"></a><a class="back" href="./">返回传文件</a></header><main><article><h1>联系</h1>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer"><title>联系热热传</title><meta name="description" content="联系热热传作者，反馈连接、传输、隐私或权利问题。"><link rel="canonical" href="https://rerechuan.com/contact.html"><link rel="icon" href="./rere-symbol.svg"><link rel="stylesheet" href="./site-pages.css"><script type="module" src="./feedback.js?v=feedback1"></script></head><body><header class="site-header"><a href="./" aria-label="热热传首页"><img src="./rere-logo-dark.svg" alt="热热传" width="147" height="48"></a><a class="back" href="./">返回传文件</a></header><main><article><h1>反馈问题</h1>
+<p>连接不上、传输异常，或有想要的功能，都可以告诉我们。</p>
+<form id="feedback-form">
+<label for="feedback-category">反馈类型</label><select id="feedback-category" name="category"><option>连接问题</option><option>文件传输</option><option>功能建议</option><option>其他问题</option></select>
+<label for="feedback-details">问题或建议</label><textarea id="feedback-details" name="details" required maxlength="2000" rows="6" placeholder="发生了什么？你希望怎么改？"></textarea>
+<label for="feedback-contact">回复邮箱（选填）</label><input id="feedback-contact" name="contact" type="email" maxlength="200" autocomplete="email">
+<label class="feedback-check"><input type="checkbox" name="context">附上当前浏览器和界面语言</label>
+<p class="updated">不要填写配对码、房间链接、密码或私人文件内容。</p>
+<button type="submit">生成反馈邮件</button>
+<p id="feedback-status" role="status" aria-live="polite"></p>
+<section id="feedback-result" hidden><h2>检查内容后发送</h2><p>尚未发送。请打开邮件并发送，或复制内容后自行发送。</p><div class="feedback-actions"><a id="feedback-email" class="feedback-button">打开邮件发送</a><button type="button" id="feedback-copy">复制反馈内容</button></div><label for="feedback-preview">邮件内容预览</label><textarea id="feedback-preview" readonly rows="8"></textarea></section>
+</form>
 <p class="lead">问题反馈、使用建议和隐私请求，都可以发邮件。</p>
 <h2>联系作者</h2><p>Foster Fei</p><p><a class="contact-address" href="mailto:fanghong1994@gmail.com">fanghong1994@gmail.com</a></p><p>点击邮箱可打开邮件应用，也可以复制地址自行发送。联系无需付费，暂不承诺固定回复时限。</p>
 <h2>反馈连接或传输问题</h2><ul><li>两台设备的系统和浏览器，例如 Windows Chrome 与 Mac Chrome。</li><li>连接方式，例如电脑接网线、手机连 Wi-Fi。</li><li>出现问题的步骤、页面提示，以及文件大小和显示的速度。</li><li>如附截图，请先遮住配对码、房间链接和私人内容。</li></ul><p>不需要发送原文件、账号密码或完整房间链接。只提供能说明问题的必要信息即可。</p>
