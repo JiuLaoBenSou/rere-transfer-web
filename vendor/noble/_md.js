@@ -2,8 +2,8 @@
  * Internal Merkle-Damgard hash utils.
  * @module
  */
-import { setU64FromNum } from "./_u64.js?v=feedback1";
-import { abytes, aexists, aoutput, createView } from "./utils.js?v=feedback1";
+import { setU64FromNum } from "./_u64.js?v=inbox1";
+import { abytes, aexists, aoutput, createView } from "./utils.js?v=inbox1";
 /**
  * Shared 32-bit conditional boolean primitive reused by SHA-256, SHA-1, and MD5 `F`.
  * Returns bits from `b` when `a` is set, otherwise from `c`.

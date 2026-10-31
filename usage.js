@@ -1,4 +1,4 @@
-import {apiURL} from './app-config.js?v=feedback1';
+import {apiURL} from './app-config.js?v=inbox1';
 export class UsageReporter {
  constructor(room,{fetcher=globalThis.fetch?.bind(globalThis),url=apiURL,enabled=globalThis.location?.protocol==='https:'}={}){this.room=room;this.fetcher=fetcher;this.url=url;this.enabled=enabled;this.pending=new Set();this.done=new Set();}
  async send(data){

@@ -56,3 +56,23 @@ body .inbox-header,body[data-theme=ember] .inbox-header{padding:0 0 10px;min-hei
 .header-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;margin-left:auto;flex-wrap:wrap}.header-actions .language-control{margin-left:0;font-size:12px;gap:8px}.header-actions .site-help{display:inline-flex;align-items:center;justify-content:center;margin:0;min-height:42px;padding:9px 16px;border:1px solid var(--accent);border-radius:10px;background:var(--soft,var(--surface));color:var(--accent);font-size:14px;font-weight:650;text-decoration:none;white-space:nowrap}.header-actions .site-help:hover{background:var(--accent);color:var(--accent-ink,#251c16)}body .topbar,body[data-theme=ember] .topbar{height:auto;min-height:94px;padding-top:16px;padding-bottom:16px;gap:14px}@media(max-width:760px){body .topbar,body[data-theme=ember] .topbar{min-height:74px;padding-top:12px;padding-bottom:12px}.header-actions{gap:10px}.header-actions .site-help{font-size:13px;padding:8px 12px}.header-actions .language-control{font-size:12px;gap:6px}}
 
 .header-actions .site-feedback{font-size:13px;color:var(--muted);text-underline-offset:4px;white-space:nowrap;padding:8px 0}
+
+/* Incoming files stay above the send area. Empty inbox takes one compact row. */
+body .inbox-pane,body[data-theme=ember] .inbox-pane{grid-row:1;min-height:0;scroll-margin-top:18px}
+body .send-pane,body[data-theme=ember] .send-pane{grid-row:2}
+body .inbox-empty,body[data-theme=ember] .inbox-empty{min-height:0;padding:4px 0 0;display:block;text-align:left}
+body .inbox-empty[hidden]{display:none}
+body .inbox-empty>svg{display:none}
+body .inbox-empty>p{margin:0;font-size:12px}
+body .inbox-list,body[data-theme=ember] .inbox-list{max-height:300px;overscroll-behavior:contain}
+body .received-item{padding:14px 0}
+body .received-item>.receipt{display:block;margin:6px 0 12px}
+body #file-unread{position:fixed;right:22px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:80;max-width:calc(100vw - 36px);padding:12px 18px;min-height:46px;background:var(--accent);color:var(--accent-ink,#251c16);border:1px solid var(--accent);border-radius:12px;box-shadow:0 8px 28px #0004;white-space:normal;text-align:left}
+body #file-unread[hidden]{display:none}
+@media(max-width:760px){
+ body .inbox-pane,body[data-theme=ember] .inbox-pane{grid-row:1;padding:16px 18px}
+ body #text-panel{grid-row:2}
+ body .send-pane,body[data-theme=ember] .send-pane{grid-row:3}
+ body .inbox-list,body[data-theme=ember] .inbox-list{max-height:260px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

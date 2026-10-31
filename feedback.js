@@ -7,7 +7,7 @@ export function createFeedbackDraft({category='',details='',contact='',includeCo
 }
 
 if(typeof document!=='undefined'){
- const {initPage,t,getLanguage}=await import('./i18n.js?v=feedback1');initPage();
+ const {initPage,t,getLanguage}=await import('./i18n.js?v=inbox1');initPage();
  const form=document.querySelector('#feedback-form'),status=document.querySelector('#feedback-status');
  const details=form.elements.details;
  form.addEventListener('input',()=>{details.setCustomValidity('');document.querySelector('#feedback-result').hidden=true;status.textContent='';});

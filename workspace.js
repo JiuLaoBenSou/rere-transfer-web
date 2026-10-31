@@ -1,17 +1,17 @@
-import {UsageReporter} from './usage.js?v=feedback1';
-import {drawQR} from './vendor/reference/qr.js?v=feedback1';
-import {t,initPage,getLanguage} from './i18n.js?v=feedback1';
+import {UsageReporter} from './usage.js?v=inbox1';
+import {drawQR} from './vendor/reference/qr.js?v=inbox1';
+import {t,initPage,getLanguage} from './i18n.js?v=inbox1';
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
-import { TransferSession, MAX_FILE } from './transfer.js?v=feedback1';
-import { TransferRate, formatRate } from './transfer-rate.js?v=feedback1';
-import { ReceiverStore } from './receiver-store.js?v=feedback1';
-import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=feedback1';
-import { GroupLink } from './group-link.js?v=feedback1';
-import { RoomTransfers } from './room-transfers.js?v=feedback1';
-import { createTransferMark } from './transfer-mark.js?v=feedback1';
-import { apiURL, inviteURL, readInvite } from './app-config.js?v=feedback1';
-import { deviceLabel, DeviceProfile } from './device-profile.js?v=feedback1';
-import { RoomChat } from './room-chat.js?v=feedback1';
+import { TransferSession, MAX_FILE } from './transfer.js?v=inbox1';
+import { TransferRate, formatRate } from './transfer-rate.js?v=inbox1';
+import { ReceiverStore } from './receiver-store.js?v=inbox1';
+import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=inbox1';
+import { GroupLink } from './group-link.js?v=inbox1';
+import { RoomTransfers } from './room-transfers.js?v=inbox1';
+import { createTransferMark } from './transfer-mark.js?v=inbox1';
+import { apiURL, inviteURL, readInvite } from './app-config.js?v=inbox1';
+import { deviceLabel, DeviceProfile } from './device-profile.js?v=inbox1';
+import { RoomChat } from './room-chat.js?v=inbox1';
 initPage();
 const $ = selector => document.querySelector(selector);
 // Internal tools are opt-in; ordinary invitations never carry this flag.
@@ -192,10 +192,25 @@ $('#send-text').addEventListener('click', () => {
 });
 $('#cancel-send').addEventListener('click', () => { state.stopQueue = true; state.session?.cancel(); });
 function inboxNode(id) { return document.getElementById('received-' + id); }
+const inboxPane = $('.inbox-pane'), fileNotice = $('#file-unread');
+function notifyInbox(message) {
+  const rect = inboxPane.getBoundingClientRect();
+  fileNotice.textContent = message;
+  fileNotice.hidden = rect.top >= 0 && rect.top < window.innerHeight - 80;
+}
+fileNotice.addEventListener('click', () => {
+  inboxPane.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  $('#inbox-list').scrollTop = 0;
+  $('#inbox-heading').focus({ preventScroll: true });
+  fileNotice.hidden = true;
+});
+new IntersectionObserver(entries => {
+  if (entries.some(entry => entry.isIntersecting && entry.intersectionRect.height >= 80)) fileNotice.hidden = true;
+}, { threshold: [0, .25, .5, 1] }).observe(inboxPane);
 function newInboxItem(id) { $('#inbox-empty').hidden = true; const item = document.createElement('article'); item.id = 'received-' + id; item.className = 'received-item'; $('#inbox-list').prepend(item); $('#clear-inbox').hidden = false; return item; }
 function onOffer(meta, receivingSession = state.session, peer) {
   if (meta.kind === 'text') return;
-  if ($('#file-panel').hidden) { $('#file-unread').hidden = false; $('#file-unread').textContent = t('正在接收文件 · 查看收件箱'); }
+  notifyInbox(t('正在接收文件 · 查看收件箱'));
   const session = receivingSession, item = newInboxItem(meta.id);
   item.append(textElement('h3', meta.name), textElement('p', formatBytes(meta.size) + t(' · 正在自动接收…')), ...(peer ? [textElement('span', t('来自 ') + peer.label, 'receipt')] : []));
   const stop = textElement('button', t('停止接收'), 'quiet stop-receive');
@@ -211,7 +226,7 @@ function onReceived(result) {
     capacity(); return;
   }
   transferMark.reset(); const item = inboxNode(result.id) || newInboxItem(result.id); item.replaceChildren();
-  if ($('#file-panel').hidden) { $('#file-unread').hidden = false; $('#file-unread').textContent = t('收到文件 · 查看收件箱'); }
+  notifyInbox(t('收到文件 · 查看收件箱'));
   item.append(textElement('h3', result.kind === 'text' ? t('文字与代码') : result.name));
   if (result.sender) item.append(textElement('span', t('来自 ') + result.sender, 'receipt'));
   if (result.kind === 'file') {
@@ -233,7 +248,7 @@ async function clearInbox() {
   try {
     for (const url of state.urls.values()) URL.revokeObjectURL(url); state.urls.clear();
     await store.clear(); state.session?.receipts.clear();
-    $('#inbox-list').replaceChildren(); $('#inbox-empty').hidden = false; $('#clear-inbox').hidden = true; capacity();
+    $('#inbox-list').replaceChildren(); $('#inbox-empty').hidden = false; $('#clear-inbox').hidden = true; fileNotice.hidden = true; capacity();
   } catch (e) { error(t('临时存储清理失败：') + e.message); }
   finally { $('#clear-inbox').disabled = false; }
 }

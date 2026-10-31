@@ -6,7 +6,7 @@
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="热热传：同一网络下，打开网页即可互传文件和文字。无需安装或注册，支持多设备配对。">
   <title>热热传 · 局域网文件互传</title><link rel="canonical" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-feedback1"><script type="module" src="./workspace.js?v=0.8.1-feedback1"></script>
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-inbox1"><script type="module" src="./workspace.js?v=0.8.1-inbox1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -34,8 +34,9 @@
       </section>
       <p id="compatibility-note" class="prototype-note">部分网络环境下，Windows 与 iPhone 可能无法直连，兼容性待后续优化。</p>
       <p id="room-error" class="error-line" role="alert" hidden></p>
-      <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden></button><button id="file-unread" class="quiet" hidden>收到文件 · 查看收件箱</button></div></div>
+      <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden></button><button id="file-unread" class="quiet" aria-live="polite" aria-controls="inbox-list" hidden>收到文件 · 查看收件箱</button></div></div>
       <div class="workspace">
+        <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading" tabindex="-1"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"/></svg>收件箱</h2><button id="clear-inbox" class="quiet" hidden>清空</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"/></svg><p>还没有收到文件</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
         <section class="send-pane" aria-label="发送内容">
           <div class="section-heading"><h2>传文件</h2><span>只发给你选的设备</span></div>
           <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="房间中的设备" hidden><div class="devices-heading"><strong>文件发给</strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div></section>
@@ -50,7 +51,7 @@
             <div class="chat-compose"><label for="text-draft" class="sr-only">消息内容</label><textarea id="text-draft" maxlength="20000" placeholder="输入消息、链接或代码" spellcheck="false" rows="2"></textarea><button id="send-text" class="primary" aria-describedby="text-send-hint" disabled>发送</button></div>
             <div class="chat-compose-meta"><p id="text-send-hint" class="send-hint" role="status"></p><div><span id="text-count">0 / 20,000</span><button id="clear-text" class="quiet">清空输入</button></div></div>
           </div>
-        <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"/></svg>收件箱</h2><button id="clear-inbox" class="quiet" hidden>清空</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"/></svg><p>还没有收到文件</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
+
       </div>
       <p id="capacity-note" class="prototype-note" role="status">正在检测接收能力…</p><p class="prototype-note">只与信任的设备配对。传输时保持页面打开。</p>
     </main>
