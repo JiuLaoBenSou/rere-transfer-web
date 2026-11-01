@@ -1,9 +1,9 @@
 <!DOCTYPE html><!----><html lang="en" data-api-origin="https://api.rerechuan.com" data-static-language="en"><head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="WarmDrop: share files and text between devices on the same local network. No installation or account required. Supports multiple devices.">
-  <title>WarmDrop · Local file sharing</title><link rel="canonical" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-locales1"><script type="module" src="./workspace.js?v=0.8.1-locales1"></script>
+  <meta name="description" content="Transfer files and text between devices on the same network. No app or account, no cloud file uploads. Pair with a code or QR; internet is needed for setup.">
+  <title>WarmDrop — Local Network File Transfer, No Install</title><link rel="canonical" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-seo1"><script type="module" src="./workspace.js?v=0.8.1-seo1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -15,7 +15,7 @@
   <div class="app-shell">
     <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><img class="logo-light" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><span class="brand-wordmark">WarmDrop</span></a><div class="design-controls" hidden=""><a href="./styles.html">Style gallery</a><label for="theme-select" class="sr-only">Page style</label><select id="theme-select"><option value="warm">01 Friendly</option><option value="minimal">02 Minimal</option><option value="studio">03 Studio</option><option value="privacy">04 Private</option><option value="bold">05 Bold</option><option value="ember">Ember · Draft</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">Feedback</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">How to use</a></header>
     <main>
-      <section class="intro"><h1><span>Same local network.</span> <span>Files sent directly.</span></h1><p>Transfer files over your local network without mobile data or server uploads.<br>Loading the website and pairing devices still require internet access.</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="intro"><h1><span>Local network file transfer.</span> <span>No app to install.</span></h1><p>Transfer files over your local network without mobile data or server uploads.<br>Loading the website and pairing devices still require internet access.</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
         <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"></use></svg><div><h2 id="room-heading">Connect nearby devices</h2><p>Up to 6 devices · Same network</p></div></div>
         <button id="create-room" class="primary">Create room</button>
@@ -51,6 +51,17 @@
 
       </div>
       <p id="capacity-note" class="prototype-note" role="status">Checking receiving capacity…</p><p class="prototype-note">Only pair with devices you trust. Keep this page open during transfers.</p>
+
+      <section class="product-guide" aria-labelledby="lan-guide-heading">
+        <h2 id="lan-guide-heading">File sharing on the same Wi-Fi</h2>
+        <p>No installation or account. No cloud file uploads. Loading the website and pairing devices still require internet.</p>
+        <div class="product-scenarios">
+          <article><h3>Transfer files between Windows and Mac</h3><p>Connect both computers to the same network, pair their browsers with a code, then drop documents, videos or ZIP files to send.</p></article>
+          <article><h3>Send photos from phone to computer</h3><p>Connect your phone and computer to the same Wi-Fi. Scan the QR code or enter the pairing code, then choose a recipient and send photos. Some Windows and iPhone setups cannot connect directly.</p></article>
+          <article><h3>Send text and links between devices</h3><p>Post a URL, text or code in chat for every connected device in the room. You can keep chatting while files transfer.</p></article>
+        </div>
+        <nav><a href="./how-to-use.html">See how to pair, receive and download</a><a href="./privacy.html">How files and connection data are handled</a></nav>
+      </section>
     </main>
     <footer class="site-footer"><nav class="site-links" aria-label="Site navigation"><a href="./en.html" hreflang="en" lang="en">English</a><a href="./zh-TW.html" hreflang="zh-TW" lang="zh-TW">ZH-TW</a><a href="./ja.html" hreflang="ja" lang="ja">JA</a><a href="./ko.html" hreflang="ko" lang="ko">KO</a><a href="./es.html" hreflang="es" lang="es">ES</a><a href="./fr.html" hreflang="fr" lang="fr">FR</a><a href="./de.html" hreflang="de" lang="de">DE</a><a href="./pt.html" hreflang="pt" lang="pt">PT</a><a href="./about.html" target="_blank" rel="noopener">About</a><a href="./contact.html" target="_blank" rel="noopener">Contact</a><a href="./privacy.html" target="_blank" rel="noopener">Privacy policy</a><a href="./how-to-use.html" target="_blank" rel="noopener">How to use</a></nav><div class="footer-meta"><span>© 2026 Foster Fei · WarmDrop</span><a href="mailto:fanghong1994@gmail.com">fanghong1994@gmail.com</a></div></footer>
   </div>

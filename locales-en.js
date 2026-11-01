@@ -466,5 +466,19 @@ export default {
 "邮件内容预览": "Email preview",
 "请先描述遇到的问题或建议。": "Please describe the problem or suggestion first.",
 "已复制，请粘贴到邮件中发送。": "Copied. Paste into an email and send.",
-"请手动复制下方内容。": "Please copy the text below manually."
+"请手动复制下方内容。": "Please copy the text below manually.",
+"热热传｜局域网文件传输，电脑手机免安装互传": "WarmDrop — Local Network File Transfer, No Install",
+"热热传是免安装、免注册的局域网文件传输工具。电脑和手机连接同一 Wi-Fi 或有线网络，用配对码或扫码互传文件、照片和文字，文件不上传云端；打开网页与配对仍需联网。": "Transfer files and text between devices on the same network. No app or account, no cloud file uploads. Pair with a code or QR; internet is needed for setup.",
+"局域网文件互传，": "Local network file transfer.",
+"免安装，打开就能传。": "No app to install.",
+"局域网互传，适合这些场景": "File sharing on the same Wi-Fi",
+"Windows 和 Mac 互传文件": "Transfer files between Windows and Mac",
+"两台电脑连接同一网络，用配对码连接浏览器，拖入文档、视频或压缩包即可发送。": "Connect both computers to the same network, pair their browsers with a code, then drop documents, videos or ZIP files to send.",
+"手机照片传电脑": "Send photos from phone to computer",
+"手机和电脑连接同一 Wi-Fi，扫码或输入配对码入房，再选中接收设备发送照片。部分 Windows 与 iPhone 组合可能无法直连。": "Connect your phone and computer to the same Wi-Fi. Scan the QR code or enter the pairing code, then choose a recipient and send photos. Some Windows and iPhone setups cannot connect directly.",
+"跨设备发送文字和链接": "Send text and links between devices",
+"把网址、文字或代码发到聊天框，房间内已连接的设备都能收到。传文件时也能继续聊天。": "Post a URL, text or code in chat for every connected device in the room. You can keep chatting while files transfer.",
+"免安装、免注册，文件不上传云端。打开网页和设备配对仍需联网。": "No installation or account. No cloud file uploads. Loading the website and pairing devices still require internet.",
+"查看配对、接收和下载步骤": "See how to pair, receive and download",
+"了解文件与连接信息如何处理": "How files and connection data are handled"
 };

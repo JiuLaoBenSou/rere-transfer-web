@@ -466,5 +466,19 @@ export default {
 "邮件内容预览": "Aperçu du courriel",
 "请先描述遇到的问题或建议。": "Décrivez d’abord le problème ou votre suggestion.",
 "已复制，请粘贴到邮件中发送。": "Copié. Collez le texte dans un courriel et envoyez-le.",
-"请手动复制下方内容。": "Copiez manuellement le texte ci-dessous."
+"请手动复制下方内容。": "Copiez manuellement le texte ci-dessous.",
+"热热传｜局域网文件传输，电脑手机免安装互传": "WarmDrop — Transfert de fichiers en réseau local, sans installation",
+"热热传是免安装、免注册的局域网文件传输工具。电脑和手机连接同一 Wi-Fi 或有线网络，用配对码或扫码互传文件、照片和文字，文件不上传云端；打开网页与配对仍需联网。": "Transférez fichiers et texte entre appareils du même réseau, sans application ni compte et sans dépôt de fichiers dans le cloud. Le chargement et le jumelage nécessitent internet.",
+"局域网文件互传，": "Transfert de fichiers en réseau local.",
+"免安装，打开就能传。": "Sans application à installer.",
+"局域网互传，适合这些场景": "Partager des fichiers sur le même Wi-Fi",
+"Windows 和 Mac 互传文件": "Transférer des fichiers entre Windows et Mac",
+"两台电脑连接同一网络，用配对码连接浏览器，拖入文档、视频或压缩包即可发送。": "Connectez les deux ordinateurs au même réseau, associez leurs navigateurs avec un code, puis déposez documents, vidéos ou fichiers ZIP pour les envoyer.",
+"手机照片传电脑": "Envoyer les photos du téléphone à l’ordinateur",
+"手机和电脑连接同一 Wi-Fi，扫码或输入配对码入房，再选中接收设备发送照片。部分 Windows 与 iPhone 组合可能无法直连。": "Connectez le téléphone et l’ordinateur au même Wi-Fi. Scannez le QR ou saisissez le code, choisissez le destinataire et envoyez les photos. Certaines configurations Windows et iPhone ne permettent pas la connexion directe.",
+"跨设备发送文字和链接": "Envoyer du texte et des liens entre appareils",
+"把网址、文字或代码发到聊天框，房间内已连接的设备都能收到。传文件时也能继续聊天。": "Publiez une URL, du texte ou du code dans le chat pour tous les appareils connectés à la salle. Le chat reste disponible pendant le transfert des fichiers.",
+"免安装、免注册，文件不上传云端。打开网页和设备配对仍需联网。": "Sans installation ni compte. Les fichiers ne sont pas déposés dans le cloud. Le chargement du site et le jumelage nécessitent internet.",
+"查看配对、接收和下载步骤": "Comment associer, recevoir et télécharger",
+"了解文件与连接信息如何处理": "Traitement des fichiers et des données de connexion"
 };

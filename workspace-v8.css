@@ -76,3 +76,5 @@ body #file-unread[hidden]{display:none}
  body .inbox-list,body[data-theme=ember] .inbox-list{max-height:260px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+.product-guide{margin:38px 0 28px;padding-top:28px;border-top:1px solid var(--line);color:var(--muted);font-size:14px;line-height:1.8}.product-guide>h2{font-size:20px;color:var(--ink);margin-bottom:8px}.product-scenarios{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px;margin:22px 0}.product-scenarios article{min-width:0}.product-scenarios h3{font-size:16px;color:var(--ink);margin:0 0 8px}.product-guide nav{display:flex;gap:12px 24px;flex-wrap:wrap}.product-guide a{color:var(--accent);text-underline-offset:4px}.product-guide p{overflow-wrap:anywhere}@media(max-width:760px){.product-scenarios{grid-template-columns:1fr;gap:18px}.product-guide{font-size:13px}.product-guide>h2{font-size:18px}}

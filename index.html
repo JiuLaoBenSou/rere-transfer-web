@@ -4,9 +4,9 @@
 <head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="热热传：同一网络下，打开网页即可互传文件和文字。无需安装或注册，支持多设备配对。">
-  <title>热热传 · 局域网文件互传</title><link rel="canonical" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-locales1"><script type="module" src="./workspace.js?v=0.8.1-locales1"></script>
+  <meta name="description" content="热热传是免安装、免注册的局域网文件传输工具。电脑和手机连接同一 Wi-Fi 或有线网络，用配对码或扫码互传文件、照片和文字，文件不上传云端；打开网页与配对仍需联网。">
+  <title>热热传｜局域网文件传输，电脑手机免安装互传</title><link rel="canonical" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-seo1"><script type="module" src="./workspace.js?v=0.8.1-seo1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -18,7 +18,7 @@
   <div class="app-shell">
     <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-logo-dark.svg" alt="热热传" width="147" height="48"><img class="logo-light" src="./rere-logo-light.svg" alt="热热传" width="147" height="48"></a><div class="design-controls" hidden><a href="./styles.html">五种风格</a><label for="theme-select" class="sr-only">页面风格</label><select id="theme-select"><option value="warm">01 亲切工具</option><option value="minimal">02 极简白</option><option value="studio">03 创作工作台</option><option value="privacy">04 安静深色</option><option value="bold">05 鲜明品牌</option><option value="ember">炉火暖色 · 试稿</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">反馈问题</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">使用说明</a></header>
     <main>
-      <section class="intro"><h1><span>同一局域网，</span><span>文件直接传。</span></h1><p>局域网内传文件，不耗移动数据流量，不上传服务器。<br>打开网页和设备配对仍需联网。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="intro"><h1><span>局域网文件互传，</span><span>免安装，打开就能传。</span></h1><p>局域网内传文件，不耗移动数据流量，不上传服务器。<br>打开网页和设备配对仍需联网。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
         <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"/></svg><div><h2 id="room-heading">连接身边的设备</h2><p>最多 6 台 · 同一网络</p></div></div>
         <button id="create-room" class="primary">创建房间</button>
@@ -54,6 +54,17 @@
 
       </div>
       <p id="capacity-note" class="prototype-note" role="status">正在检测接收能力…</p><p class="prototype-note">只与信任的设备配对。传输时保持页面打开。</p>
+
+      <section class="product-guide" aria-labelledby="lan-guide-heading">
+        <h2 id="lan-guide-heading">局域网互传，适合这些场景</h2>
+        <p>免安装、免注册，文件不上传云端。打开网页和设备配对仍需联网。</p>
+        <div class="product-scenarios">
+          <article><h3>Windows 和 Mac 互传文件</h3><p>两台电脑连接同一网络，用配对码连接浏览器，拖入文档、视频或压缩包即可发送。</p></article>
+          <article><h3>手机照片传电脑</h3><p>手机和电脑连接同一 Wi-Fi，扫码或输入配对码入房，再选中接收设备发送照片。部分 Windows 与 iPhone 组合可能无法直连。</p></article>
+          <article><h3>跨设备发送文字和链接</h3><p>把网址、文字或代码发到聊天框，房间内已连接的设备都能收到。传文件时也能继续聊天。</p></article>
+        </div>
+        <nav><a href="./how-to-use.html">查看配对、接收和下载步骤</a><a href="./privacy.html">了解文件与连接信息如何处理</a></nav>
+      </section>
     </main>
     <footer class="site-footer"><nav class="site-links" aria-label="网站导航"><a href="./en.html" hreflang="en" lang="en">English</a><a href="./zh-TW.html" hreflang="zh-TW" lang="zh-TW">ZH-TW</a><a href="./ja.html" hreflang="ja" lang="ja">JA</a><a href="./ko.html" hreflang="ko" lang="ko">KO</a><a href="./es.html" hreflang="es" lang="es">ES</a><a href="./fr.html" hreflang="fr" lang="fr">FR</a><a href="./de.html" hreflang="de" lang="de">DE</a><a href="./pt.html" hreflang="pt" lang="pt">PT</a><a href="./about.html" target="_blank" rel="noopener">关于</a><a href="./contact.html" target="_blank" rel="noopener">联系</a><a href="./privacy.html" target="_blank" rel="noopener">隐私政策</a><a href="./how-to-use.html" target="_blank" rel="noopener">使用说明</a></nav><div class="footer-meta"><span>© 2026 Foster Fei · 热热传</span><a href="mailto:fanghong1994@gmail.com">fanghong1994@gmail.com</a></div></footer>
   </div>

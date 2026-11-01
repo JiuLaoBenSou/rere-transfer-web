@@ -1,9 +1,9 @@
 <!DOCTYPE html><!----><html lang="ko" data-api-origin="https://api.rerechuan.com" data-static-language="ko"><head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="WarmDrop: 동일한 로컬 네트워크에 있는 장치 간에 파일 및 텍스트를 공유합니다. 설치나 계정이 필요하지 않습니다. 여러 장치를 지원합니다.">
-  <title>WarmDrop · 로컬 파일 공유</title><link rel="canonical" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-locales1"><script type="module" src="./workspace.js?v=0.8.1-locales1"></script>
+  <meta name="description" content="같은 Wi-Fi 또는 유선 네트워크에서 파일과 텍스트를 주고받으세요. 앱 설치와 가입 없이 코드나 QR로 연결합니다. 파일은 클라우드에 업로드하지 않으며, 웹페이지 로딩과 기기 연결에는 인터넷이 필요합니다.">
+  <title>WarmDrop — 같은 Wi-Fi 파일 전송, 설치 없이</title><link rel="canonical" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-seo1"><script type="module" src="./workspace.js?v=0.8.1-seo1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -15,7 +15,7 @@
   <div class="app-shell">
     <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><img class="logo-light" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><span class="brand-wordmark">WarmDrop</span></a><div class="design-controls" hidden=""><a href="./styles.html">스타일 갤러리</a><label for="theme-select" class="sr-only">페이지 스타일</label><select id="theme-select"><option value="warm">01 우호적</option><option value="minimal">02 최소</option><option value="studio">03 스튜디오</option><option value="privacy">04 비공개</option><option value="bold">05 굵게</option><option value="ember">불씨 · 초안</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">의견 보내기</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">사용 방법</a></header>
     <main>
-      <section class="intro"><h1><span>같은 로컬 네트워크에서</span> <span>파일을 직접 전송하세요.</span></h1><p>모바일 데이터나 서버 업로드 없이 로컬 네트워크를 통해 파일을 전송하세요.<br>웹사이트를 로드하고 장치를 페어링하려면 여전히 인터넷 액세스가 필요합니다.</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="intro"><h1><span>로컬 네트워크 파일 전송.</span> <span>앱 설치 없이.</span></h1><p>모바일 데이터나 서버 업로드 없이 로컬 네트워크를 통해 파일을 전송하세요.<br>웹사이트를 로드하고 장치를 페어링하려면 여전히 인터넷 액세스가 필요합니다.</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
         <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"></use></svg><div><h2 id="room-heading">주변 장치 연결</h2><p>최대 6개 장치 · 동일한 네트워크</p></div></div>
         <button id="create-room" class="primary">방 만들기</button>
@@ -51,6 +51,17 @@
 
       </div>
       <p id="capacity-note" class="prototype-note" role="status">수신 용량 확인 중…</p><p class="prototype-note">신뢰할 수 있는 장치에만 페어링하세요. 전송 중에 이 페이지를 열어두세요.</p>
+
+      <section class="product-guide" aria-labelledby="lan-guide-heading">
+        <h2 id="lan-guide-heading">같은 Wi-Fi에서 파일 공유</h2>
+        <p>앱 설치와 가입이 필요 없으며 파일은 클라우드에 업로드하지 않습니다. 웹페이지 로딩과 기기 연결에는 인터넷이 필요합니다.</p>
+        <div class="product-scenarios">
+          <article><h3>Windows와 Mac 간 파일 전송</h3><p>두 컴퓨터를 같은 네트워크에 연결하고 코드로 브라우저를 연결한 뒤, 문서나 동영상, ZIP 파일을 끌어다 놓아 전송하세요.</p></article>
+          <article><h3>휴대폰 사진을 컴퓨터로</h3><p>휴대폰과 컴퓨터를 같은 Wi-Fi에 연결하세요. QR을 스캔하거나 코드를 입력해 방에 들어온 뒤 받을 기기를 선택해 사진을 보냅니다. 일부 Windows와 iPhone 조합은 직접 연결되지 않을 수 있습니다.</p></article>
+          <article><h3>기기 간 텍스트와 링크 전송</h3><p>채팅에 URL, 텍스트, 코드를 보내면 방 안의 연결된 모든 기기가 받습니다. 파일 전송 중에도 채팅을 사용할 수 있습니다.</p></article>
+        </div>
+        <nav><a href="./how-to-use.html">연결·수신·다운로드 방법 보기</a><a href="./privacy.html">파일과 연결 정보 처리 방식</a></nav>
+      </section>
     </main>
     <footer class="site-footer"><nav class="site-links" aria-label="사이트 탐색"><a href="./en.html" hreflang="en" lang="en">English</a><a href="./zh-TW.html" hreflang="zh-TW" lang="zh-TW">ZH-TW</a><a href="./ja.html" hreflang="ja" lang="ja">JA</a><a href="./ko.html" hreflang="ko" lang="ko">KO</a><a href="./es.html" hreflang="es" lang="es">ES</a><a href="./fr.html" hreflang="fr" lang="fr">FR</a><a href="./de.html" hreflang="de" lang="de">DE</a><a href="./pt.html" hreflang="pt" lang="pt">PT</a><a href="./about.html" target="_blank" rel="noopener">소개</a><a href="./contact.html" target="_blank" rel="noopener">문의</a><a href="./privacy.html" target="_blank" rel="noopener">개인정보 처리방침</a><a href="./how-to-use.html" target="_blank" rel="noopener">사용 방법</a></nav><div class="footer-meta"><span>© 2026 Foster Fei · WarmDrop</span><a href="mailto:fanghong1994@gmail.com">fanghong1994@gmail.com</a></div></footer>
   </div>

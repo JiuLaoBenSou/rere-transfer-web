@@ -1,9 +1,9 @@
 <!DOCTYPE html><!----><html lang="zh-TW" data-api-origin="https://api.rerechuan.com" data-static-language="zh-TW"><head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="熱熱傳：同一網路下，打開網頁即可互傳檔案和文字。無需安裝或註冊，支持多裝置配對。">
-  <title>熱熱傳 · 區域網路檔案互傳</title><link rel="canonical" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-locales1"><script type="module" src="./workspace.js?v=0.8.1-locales1"></script>
+  <meta name="description" content="熱熱傳是免安裝、免註冊的區域網路檔案傳輸工具。電腦和手機連接相同 Wi-Fi 或有線網路，以配對碼或掃碼互傳檔案、照片和文字，檔案不上傳雲端；開啟網頁與配對仍需連網。">
+  <title>熱熱傳｜區域網路檔案傳輸，電腦手機免安裝互傳</title><link rel="canonical" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-seo1"><script type="module" src="./workspace.js?v=0.8.1-seo1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -15,7 +15,7 @@
   <div class="app-shell">
     <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-symbol.svg" alt="熱熱傳" width="40" height="40" style="width:40px"><img class="logo-light" src="./rere-symbol.svg" alt="熱熱傳" width="40" height="40" style="width:40px"><span class="brand-wordmark">熱熱傳</span></a><div class="design-controls" hidden=""><a href="./styles.html">五種風格</a><label for="theme-select" class="sr-only">頁面風格</label><select id="theme-select"><option value="warm">01 親切工具</option><option value="minimal">02 極簡白</option><option value="studio">03 創作工作臺</option><option value="privacy">04 安靜深色</option><option value="bold">05 鮮明品牌</option><option value="ember">爐火暖色 · 試稿</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">問題回報</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">使用說明</a></header>
     <main>
-      <section class="intro"><h1><span>同一區域網路，</span><span>直接傳送檔案。</span></h1><p>區域網路內傳檔案，不耗移動數據流量，不上傳伺服器。<br>打開網頁和裝置配對仍需聯網。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="intro"><h1><span>區域網路檔案互傳，</span><span>免安裝，開啟網頁就能傳。</span></h1><p>區域網路內傳檔案，不耗移動數據流量，不上傳伺服器。<br>打開網頁和裝置配對仍需聯網。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
         <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"></use></svg><div><h2 id="room-heading">連線身邊的裝置</h2><p>最多 6 臺 · 同一網路</p></div></div>
         <button id="create-room" class="primary">建立房間</button>
@@ -51,6 +51,17 @@
 
       </div>
       <p id="capacity-note" class="prototype-note" role="status">正在檢測接收能力…</p><p class="prototype-note">只與信任的裝置配對。傳輸時保持頁面打開。</p>
+
+      <section class="product-guide" aria-labelledby="lan-guide-heading">
+        <h2 id="lan-guide-heading">同一 Wi-Fi 下的檔案分享</h2>
+        <p>免安裝、免註冊，檔案不上傳雲端。開啟網頁和裝置配對仍需連網。</p>
+        <div class="product-scenarios">
+          <article><h3>Windows 和 Mac 互傳檔案</h3><p>兩台電腦連接相同網路，以配對碼連接瀏覽器，拖入文件、影片或壓縮檔即可傳送。</p></article>
+          <article><h3>手機照片傳到電腦</h3><p>手機和電腦連接相同 Wi-Fi，掃碼或輸入配對碼加入房間，再選擇接收裝置傳送照片。部分 Windows 與 iPhone 組合可能無法直連。</p></article>
+          <article><h3>跨裝置傳送文字和連結</h3><p>將網址、文字或程式碼傳到聊天框，房間內已連線的裝置都能收到。傳檔案時也能繼續聊天。</p></article>
+        </div>
+        <nav><a href="./how-to-use.html">查看配對、接收和下載步驟</a><a href="./privacy.html">了解檔案與連線資訊如何處理</a></nav>
+      </section>
     </main>
     <footer class="site-footer"><nav class="site-links" aria-label="網站導航"><a href="./en.html" hreflang="en" lang="en">English</a><a href="./zh-TW.html" hreflang="zh-TW" lang="zh-TW">ZH-TW</a><a href="./ja.html" hreflang="ja" lang="ja">JA</a><a href="./ko.html" hreflang="ko" lang="ko">KO</a><a href="./es.html" hreflang="es" lang="es">ES</a><a href="./fr.html" hreflang="fr" lang="fr">FR</a><a href="./de.html" hreflang="de" lang="de">DE</a><a href="./pt.html" hreflang="pt" lang="pt">PT</a><a href="./about.html" target="_blank" rel="noopener">關於</a><a href="./contact.html" target="_blank" rel="noopener">聯絡</a><a href="./privacy.html" target="_blank" rel="noopener">隱私權政策</a><a href="./how-to-use.html" target="_blank" rel="noopener">使用說明</a></nav><div class="footer-meta"><span>© 2026 Foster Fei · 熱熱傳</span><a href="mailto:fanghong1994@gmail.com">fanghong1994@gmail.com</a></div></footer>
   </div>

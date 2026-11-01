@@ -1,9 +1,9 @@
 <!DOCTYPE html><!----><html lang="pt" data-api-origin="https://api.rerechuan.com" data-static-language="pt"><head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="WarmDrop: compartilhe arquivos e texto entre dispositivos na mesma rede local. Nenhuma instalação ou conta necessária. Suporta vários dispositivos.">
-  <title>WarmDrop · Compartilhamento local de arquivos</title><link rel="canonical" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-locales1"><script type="module" src="./workspace.js?v=0.8.1-locales1"></script>
+  <meta name="description" content="Transfira arquivos e texto entre dispositivos na mesma rede, sem aplicativo, conta ou upload de arquivos para a nuvem. Carregar o site e parear dispositivos exige internet.">
+  <title>WarmDrop — Transferir arquivos na rede local sem instalar</title><link rel="canonical" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-seo1"><script type="module" src="./workspace.js?v=0.8.1-seo1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -15,7 +15,7 @@
   <div class="app-shell">
     <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><img class="logo-light" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><span class="brand-wordmark">WarmDrop</span></a><div class="design-controls" hidden=""><a href="./styles.html">Galeria de estilos</a><label for="theme-select" class="sr-only">Estilo de página</label><select id="theme-select"><option value="warm">01 Amigável</option><option value="minimal">02 Mínimo</option><option value="studio">03 Estúdio</option><option value="privacy">04 Privado</option><option value="bold">05 Negrito</option><option value="ember">Brasa · Rascunho</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">Enviar opinião</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">Como usar</a></header>
     <main>
-      <section class="intro"><h1><span>Na mesma rede local.</span> <span>Envie arquivos diretamente.</span></h1><p>Transfira arquivos pela sua rede local sem dados móveis ou uploads de servidor.<br>Carregar o site e emparelhar dispositivos ainda exigem acesso à Internet.</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="intro"><h1><span>Transferência de arquivos na rede local.</span> <span>Sem instalar aplicativos.</span></h1><p>Transfira arquivos pela sua rede local sem dados móveis ou uploads de servidor.<br>Carregar o site e emparelhar dispositivos ainda exigem acesso à Internet.</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
         <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"></use></svg><div><h2 id="room-heading">Conectar dispositivos próximos</h2><p>Até 6 dispositivos · Mesma rede</p></div></div>
         <button id="create-room" class="primary">Criar sala</button>
@@ -51,6 +51,17 @@
 
       </div>
       <p id="capacity-note" class="prototype-note" role="status">Verificando capacidade de recebimento…</p><p class="prototype-note">Emparelhe apenas com dispositivos em que você confia. Mantenha esta página aberta durante as transferências.</p>
+
+      <section class="product-guide" aria-labelledby="lan-guide-heading">
+        <h2 id="lan-guide-heading">Compartilhar arquivos no mesmo Wi-Fi</h2>
+        <p>Sem instalação ou conta. Os arquivos não são enviados para a nuvem. Carregar o site e parear dispositivos exige internet.</p>
+        <div class="product-scenarios">
+          <article><h3>Transferir arquivos entre Windows e Mac</h3><p>Conecte os dois computadores à mesma rede, pareie os navegadores com um código e arraste documentos, vídeos ou arquivos ZIP para enviar.</p></article>
+          <article><h3>Passar fotos do celular para o computador</h3><p>Conecte o celular e o computador ao mesmo Wi-Fi. Leia o QR ou digite o código, escolha o destinatário e envie as fotos. Algumas combinações de Windows e iPhone não conseguem se conectar diretamente.</p></article>
+          <article><h3>Enviar texto e links entre dispositivos</h3><p>Envie uma URL, texto ou código pelo chat para todos os dispositivos conectados à sala. Você pode continuar conversando enquanto os arquivos são transferidos.</p></article>
+        </div>
+        <nav><a href="./how-to-use.html">Como parear, receber e baixar</a><a href="./privacy.html">Como arquivos e dados de conexão são tratados</a></nav>
+      </section>
     </main>
     <footer class="site-footer"><nav class="site-links" aria-label="Navegação no site
 Código QR"><a href="./en.html" hreflang="en" lang="en">English</a><a href="./zh-TW.html" hreflang="zh-TW" lang="zh-TW">ZH-TW</a><a href="./ja.html" hreflang="ja" lang="ja">JA</a><a href="./ko.html" hreflang="ko" lang="ko">KO</a><a href="./es.html" hreflang="es" lang="es">ES</a><a href="./fr.html" hreflang="fr" lang="fr">FR</a><a href="./de.html" hreflang="de" lang="de">DE</a><a href="./pt.html" hreflang="pt" lang="pt">PT</a><a href="./about.html" target="_blank" rel="noopener">Sobre</a><a href="./contact.html" target="_blank" rel="noopener">Contato</a><a href="./privacy.html" target="_blank" rel="noopener">Política de privacidade</a><a href="./how-to-use.html" target="_blank" rel="noopener">Como usar</a></nav><div class="footer-meta"><span>© 2026 Foster Fei · WarmDrop</span><a href="mailto:fanghong1994@gmail.com">fanghong1994@gmail.com</a></div></footer>

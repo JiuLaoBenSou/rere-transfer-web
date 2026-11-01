@@ -466,5 +466,19 @@ export default {
 "邮件内容预览": "Pré-visualização do email",
 "请先描述遇到的问题或建议。": "Descreve primeiro o problema ou a sugestão.",
 "已复制，请粘贴到邮件中发送。": "Copiado. Cola num email e envia.",
-"请手动复制下方内容。": "Copia manualmente o texto abaixo."
+"请手动复制下方内容。": "Copia manualmente o texto abaixo.",
+"热热传｜局域网文件传输，电脑手机免安装互传": "WarmDrop — Transferir arquivos na rede local sem instalar",
+"热热传是免安装、免注册的局域网文件传输工具。电脑和手机连接同一 Wi-Fi 或有线网络，用配对码或扫码互传文件、照片和文字，文件不上传云端；打开网页与配对仍需联网。": "Transfira arquivos e texto entre dispositivos na mesma rede, sem aplicativo, conta ou upload de arquivos para a nuvem. Carregar o site e parear dispositivos exige internet.",
+"局域网文件互传，": "Transferência de arquivos na rede local.",
+"免安装，打开就能传。": "Sem instalar aplicativos.",
+"局域网互传，适合这些场景": "Compartilhar arquivos no mesmo Wi-Fi",
+"Windows 和 Mac 互传文件": "Transferir arquivos entre Windows e Mac",
+"两台电脑连接同一网络，用配对码连接浏览器，拖入文档、视频或压缩包即可发送。": "Conecte os dois computadores à mesma rede, pareie os navegadores com um código e arraste documentos, vídeos ou arquivos ZIP para enviar.",
+"手机照片传电脑": "Passar fotos do celular para o computador",
+"手机和电脑连接同一 Wi-Fi，扫码或输入配对码入房，再选中接收设备发送照片。部分 Windows 与 iPhone 组合可能无法直连。": "Conecte o celular e o computador ao mesmo Wi-Fi. Leia o QR ou digite o código, escolha o destinatário e envie as fotos. Algumas combinações de Windows e iPhone não conseguem se conectar diretamente.",
+"跨设备发送文字和链接": "Enviar texto e links entre dispositivos",
+"把网址、文字或代码发到聊天框，房间内已连接的设备都能收到。传文件时也能继续聊天。": "Envie uma URL, texto ou código pelo chat para todos os dispositivos conectados à sala. Você pode continuar conversando enquanto os arquivos são transferidos.",
+"免安装、免注册，文件不上传云端。打开网页和设备配对仍需联网。": "Sem instalação ou conta. Os arquivos não são enviados para a nuvem. Carregar o site e parear dispositivos exige internet.",
+"查看配对、接收和下载步骤": "Como parear, receber e baixar",
+"了解文件与连接信息如何处理": "Como arquivos e dados de conexão são tratados"
 };
