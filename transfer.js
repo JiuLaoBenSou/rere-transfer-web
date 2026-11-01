@@ -1,8 +1,8 @@
-import {t} from './i18n.js?v=english1';
+import {t} from './i18n.js?v=locales1';
 // Codex / 2026-10-25. Protocol v2: bounded blocks, ACK, integrity, same-page resume.
-import { createHasher, sha256, hex } from './hash.js?v=english1';
-import { randomId } from './id.js?v=english1';
-import { ReceiverStore, DISK_FILE } from './receiver-store.js?v=english1';
+import { createHasher, sha256, hex } from './hash.js?v=locales1';
+import { randomId } from './id.js?v=locales1';
+import { ReceiverStore, DISK_FILE } from './receiver-store.js?v=locales1';
 export { sha256 };
 export const MAX_FILE = DISK_FILE, MAX_TEXT = 20000, BLOCK = 256 * 1024;
 const CHUNK = 16 * 1024;

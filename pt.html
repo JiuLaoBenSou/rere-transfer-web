@@ -1,0 +1,63 @@
+<!DOCTYPE html><!----><html lang="pt" data-api-origin="https://api.rerechuan.com" data-static-language="pt"><head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="WarmDrop: compartilhe arquivos e texto entre dispositivos na mesma rede local. Nenhuma instalação ou conta necessária. Suporta vários dispositivos.">
+  <title>WarmDrop · Compartilhamento local de arquivos</title><link rel="canonical" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-locales1"><script type="module" src="./workspace.js?v=0.8.1-locales1"></script>
+</head>
+<body data-theme="ember">
+  <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+    <symbol id="icon-file" viewBox="0 0 64 72"><path d="M38 4H12a5 5 0 0 0-5 5v54a5 5 0 0 0 5 5h40a5 5 0 0 0 5-5V23L38 4Z"></path><path d="M38 4v19h19M32 54V34m-9 9 9-9 9 9"></path></symbol>
+    <symbol id="icon-inbox" viewBox="0 0 64 52"><path d="m5 27 10-20h34l10 20v18H5V27Zm0 0h17l5 8h10l5-8h17"></path></symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m0 12a4 4 0 0 0 6 0l5-5a4 4 0 0 0-6-6l-1 1" transform="translate(0 -1) scale(.96)"></path></symbol>
+  </defs></svg>
+
+  <div class="app-shell">
+    <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><img class="logo-light" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><span class="brand-wordmark">WarmDrop</span></a><div class="design-controls" hidden=""><a href="./styles.html">Galeria de estilos</a><label for="theme-select" class="sr-only">Estilo de página</label><select id="theme-select"><option value="warm">01 Amigável</option><option value="minimal">02 Mínimo</option><option value="studio">03 Estúdio</option><option value="privacy">04 Privado</option><option value="bold">05 Negrito</option><option value="ember">Brasa · Rascunho</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">Enviar opinião</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">Como usar</a></header>
+    <main>
+      <section class="intro"><h1><span>Na mesma rede local.</span> <span>Envie arquivos diretamente.</span></h1><p>Transfira arquivos pela sua rede local sem dados móveis ou uploads de servidor.<br>Carregar o site e emparelhar dispositivos ainda exigem acesso à Internet.</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="connect-bar" aria-labelledby="room-heading">
+        <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"></use></svg><div><h2 id="room-heading">Conectar dispositivos próximos</h2><p>Até 6 dispositivos · Mesma rede</p></div></div>
+        <button id="create-room" class="primary">Criar sala</button>
+        <form id="pair-form" class="join-form pair-form" novalidate=""><label for="pair-code" class="sr-only">Código de emparelhamento de 6 dígitos</label><input id="pair-code" type="text" inputmode="numeric" maxlength="7" autocomplete="off" placeholder="Insira um código de 6 dígitos"><button class="secondary">Conectar</button></form>
+        <span class="connection-state" id="connection-label" role="status">Não conectado</span>
+        <div id="room-details" class="room-details" hidden="">
+          <div class="room-identity"><strong id="self-device"></strong><button id="rename-device" class="quiet">Renomear</button><button id="show-qr" class="secondary">Ler QR com o celular</button></div><details id="invite-options" open=""><summary>Convidar dispositivos · Código e link de emparelhamento</summary><div class="pairing-row"><div id="pairing-panel"><p class="pairing-label">Digite este código em outro computador</p><output id="pairing-code" aria-label="O código de emparelhamento de 6 dígitos deste quarto"></output><p id="pairing-status" role="status"></p><button id="refresh-pair-code" class="secondary" hidden="">Obtenha um novo código</button></div></div>
+          <details class="share-more"><summary>Copie o link completo da sala</summary><label for="invite-link" id="invite-label">Abra este link em outro dispositivo</label><div class="invite-row"><input id="invite-link" readonly=""><button id="copy-link" class="secondary">Copiar link</button></div></details>
+          </details>
+          <div class="room-tools"><span id="room-expiry"></span><button id="copy-diagnostics" class="quiet" hidden="">Copiar diagnóstico</button><button id="reconnect" class="quiet">Reconectar</button><button id="leave-room" class="quiet">Sair da sala</button></div><p class="room-policy"><span id="room-limit">Até 6 dispositivos por sala.</span><span id="network-note">Verificando acesso…</span></p><p id="signal-note" role="status"></p><p id="resume-note" role="status"></p>
+        </div>
+        <details class="join-link-option"><summary>Usar um link de sala existente</summary><form id="join-form" class="join-form" novalidate=""><label for="join-link" class="sr-only">Link da sala</label><input id="join-link" type="url" maxlength="2048" autocomplete="off" placeholder="Cole o link completo da sala"><button class="secondary">Entrar na sala</button></form></details>
+      </section>
+      <p id="compatibility-note" class="prototype-note">Algumas configurações de rede impedem que o Windows e o iPhone se conectem diretamente. Melhorias de compatibilidade estão planejadas.</p>
+      <p id="room-error" class="error-line" role="alert" hidden=""></p>
+      <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden=""></button><button id="file-unread" class="quiet" aria-live="polite" aria-controls="inbox-list" hidden="">Arquivos recebidos · Ver caixa de entrada</button></div></div>
+      <div class="workspace">
+        <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading" tabindex="-1"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>Caixa de entrada</h2><button id="clear-inbox" class="quiet" hidden="">Limpar</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"></use></svg><p>Nenhum arquivo recebido ainda</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
+        <section class="send-pane" aria-label="Enviar conteúdo">
+          <div class="section-heading"><h2>Enviar arquivos</h2><span>Somente para dispositivos selecionados</span></div>
+          <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="Dispositivos nesta sala" hidden=""><div class="devices-heading"><strong>Enviar arquivos para </strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div></section>
+            <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"></use></svg><h2>Arraste arquivos aqui</h2><label for="files" class="button primary picker-button">Escolher arquivos</label><input id="files" class="sr-only file-input" type="file" multiple=""><p class="drop-help">Envia automaticamente · Selecione vários arquivos</p></div>
+            <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden=""><button id="retry-files" class="secondary" hidden="">Reenviar pendentes</button><button id="clear-files" class="quiet">Limpar seleção</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
+          </div>
+          <div class="send-feedback" hidden=""><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden=""></progress><div id="send-rates"></div><button id="cancel-send" class="quiet" hidden="">Parar envio</button></div>
+        </section>
+        <div id="text-panel" aria-label="Bate-papo na sala" class="panel-body chat-panel">
+            <div class="chat-heading"><h2>Conversa</h2></div>
+            <div class="chat-window"><div id="chat-empty" class="chat-empty" aria-hidden="true"></div><div id="chat-log" class="chat-log" role="log" aria-label="Mensagens nesta sala" aria-live="polite" tabindex="0"></div></div>
+            <div class="chat-compose"><label for="text-draft" class="sr-only">Mensagem</label><textarea id="text-draft" maxlength="20000" placeholder="Digite uma mensagem, link ou código" spellcheck="false" rows="2"></textarea><button id="send-text" class="primary" aria-describedby="text-send-hint" disabled="">Enviar</button></div>
+            <div class="chat-compose-meta"><p id="text-send-hint" class="send-hint" role="status"></p><div><span id="text-count">0 / 20,000</span><button id="clear-text" class="quiet">Limpar entrada</button></div></div>
+          </div>
+
+      </div>
+      <p id="capacity-note" class="prototype-note" role="status">Verificando capacidade de recebimento…</p><p class="prototype-note">Emparelhe apenas com dispositivos em que você confia. Mantenha esta página aberta durante as transferências.</p>
+    </main>
+    <footer class="site-footer"><nav class="site-links" aria-label="Navegação no site
+Código QR"><a href="./en.html" hreflang="en" lang="en">English</a><a href="./zh-TW.html" hreflang="zh-TW" lang="zh-TW">ZH-TW</a><a href="./ja.html" hreflang="ja" lang="ja">JA</a><a href="./ko.html" hreflang="ko" lang="ko">KO</a><a href="./es.html" hreflang="es" lang="es">ES</a><a href="./fr.html" hreflang="fr" lang="fr">FR</a><a href="./de.html" hreflang="de" lang="de">DE</a><a href="./pt.html" hreflang="pt" lang="pt">PT</a><a href="./about.html" target="_blank" rel="noopener">Sobre</a><a href="./contact.html" target="_blank" rel="noopener">Contato</a><a href="./privacy.html" target="_blank" rel="noopener">Política de privacidade</a><a href="./how-to-use.html" target="_blank" rel="noopener">Como usar</a></nav><div class="footer-meta"><span>© 2026 Foster Fei · WarmDrop</span><a href="mailto:fanghong1994@gmail.com">fanghong1994@gmail.com</a></div></footer>
+  </div>
+  <dialog id="qr-dialog"><h2>Digitalize para entrar na sala</h2><img id="qr-image" alt="para a sala atual" width="220" height="220"><p id="qr-note">Verificando acesso…</p><button class="primary">Fechar</button></dialog>
+  <dialog id="copy-dialog"><h2>Copiar manualmente</h2><p>Seu navegador bloqueou a cópia automática. Selecione e copie o texto abaixo.</p><textarea readonly="" aria-label="Conteúdo a copiar"></textarea><button class="primary">Fechar</button></dialog>
+<dialog id="name-dialog"><h2>Dê um nome a este dispositivo</h2><form id="name-form"><label for="device-name">Nome do dispositivo</label><input id="device-name" maxlength="24" required="" autocomplete="off"><p id="name-error" role="alert"></p><div class="actions"><button class="primary">Salvar</button><button id="cancel-name" type="button" class="quiet">Cancelar</button></div></form></dialog>
+
+
+</body></html>

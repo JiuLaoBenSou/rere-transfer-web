@@ -1,0 +1,62 @@
+<!DOCTYPE html><!----><html lang="ja" data-api-origin="https://api.rerechuan.com" data-static-language="ja"><head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="WarmDrop: 同じローカル ネットワーク上のデバイス間でファイルとテキストを共有します。インストールやアカウントは必要ありません。複数のデバイスをサポートします。">
+  <title>WarmDrop・ローカルファイル共有</title><link rel="canonical" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-locales1"><script type="module" src="./workspace.js?v=0.8.1-locales1"></script>
+</head>
+<body data-theme="ember">
+  <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+    <symbol id="icon-file" viewBox="0 0 64 72"><path d="M38 4H12a5 5 0 0 0-5 5v54a5 5 0 0 0 5 5h40a5 5 0 0 0 5-5V23L38 4Z"></path><path d="M38 4v19h19M32 54V34m-9 9 9-9 9 9"></path></symbol>
+    <symbol id="icon-inbox" viewBox="0 0 64 52"><path d="m5 27 10-20h34l10 20v18H5V27Zm0 0h17l5 8h10l5-8h17"></path></symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m0 12a4 4 0 0 0 6 0l5-5a4 4 0 0 0-6-6l-1 1" transform="translate(0 -1) scale(.96)"></path></symbol>
+  </defs></svg>
+
+  <div class="app-shell">
+    <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><img class="logo-light" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><span class="brand-wordmark">WarmDrop</span></a><div class="design-controls" hidden=""><a href="./styles.html">スタイルギャラリー</a><label for="theme-select" class="sr-only">ページのスタイル</label><select id="theme-select"><option value="warm">01 フレンドリー</option><option value="minimal">02 ミニマル</option><option value="studio">03 スタジオ</option><option value="privacy">04 プライベート</option><option value="bold">05 ボールド</option><option value="ember">残り火・ドラフト</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">フィードバック</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">使い方</a></header>
+    <main>
+      <section class="intro"><h1><span>同じLANで、</span><span>ファイルを直接送信。</span></h1><p>モバイル データやサーバーのアップロードを使用せずに、ローカル ネットワーク経由でファイルを転送します。<br>Web サイトの読み込みとデバイスのペアリングには、引き続きインターネット アクセスが必要です。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="connect-bar" aria-labelledby="room-heading">
+        <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"></use></svg><div><h2 id="room-heading">近くのデバイスを接続する</h2><p>最大 6 台のデバイス · 同一ネットワーク</p></div></div>
+        <button id="create-room" class="primary">ルームを作成</button>
+        <form id="pair-form" class="join-form pair-form" novalidate=""><label for="pair-code" class="sr-only">6桁のペアリングコード</label><input id="pair-code" type="text" inputmode="numeric" maxlength="7" autocomplete="off" placeholder="6桁のコードを入力してください"><button class="secondary">接続</button></form>
+        <span class="connection-state" id="connection-label" role="status">接続されていません</span>
+        <div id="room-details" class="room-details" hidden="">
+          <div class="room-identity"><strong id="self-device"></strong><button id="rename-device" class="quiet">名前を変更</button><button id="show-qr" class="secondary">スマートフォンでスキャン</button></div><details id="invite-options" open=""><summary>デバイスの招待 · コードとリンクのペアリング</summary><div class="pairing-row"><div id="pairing-panel"><p class="pairing-label">このコードを別のコンピュータに入力してください</p><output id="pairing-code" aria-label="この部屋の6桁のペアリングコード"></output><p id="pairing-status" role="status"></p><button id="refresh-pair-code" class="secondary" hidden="">新しいコードを取得します</button></div></div>
+          <details class="share-more"><summary>ルームリンク全体をコピーします</summary><label for="invite-link" id="invite-label">このリンクを別のデバイスで開きます</label><div class="invite-row"><input id="invite-link" readonly=""><button id="copy-link" class="secondary">リンクをコピー</button></div></details>
+          </details>
+          <div class="room-tools"><span id="room-expiry"></span><button id="copy-diagnostics" class="quiet" hidden="">コピー診断</button><button id="reconnect" class="quiet">再接続</button><button id="leave-room" class="quiet">ルームから退出</button></div><p class="room-policy"><span id="room-limit">1 部屋あたり最大 6 台のデバイス。</span><span id="network-note">アクセスを確認しています…</span></p><p id="signal-note" role="status"></p><p id="resume-note" role="status"></p>
+        </div>
+        <details class="join-link-option"><summary>既存のルームリンクを使用する</summary><form id="join-form" class="join-form" novalidate=""><label for="join-link" class="sr-only">ルームリンク</label><input id="join-link" type="url" maxlength="2048" autocomplete="off" placeholder="完全なルームリンクを貼り付けてください"><button class="secondary">ルームに参加</button></form></details>
+      </section>
+      <p id="compatibility-note" class="prototype-note">一部のネットワーク設定により、Windows と iPhone の直接接続が妨げられます。互換性の改善が計画されています。</p>
+      <p id="room-error" class="error-line" role="alert" hidden=""></p>
+      <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden=""></button><button id="file-unread" class="quiet" aria-live="polite" aria-controls="inbox-list" hidden="">ファイルを受信しました · 受信箱を表示</button></div></div>
+      <div class="workspace">
+        <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading" tabindex="-1"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>受信トレイ</h2><button id="clear-inbox" class="quiet" hidden="">クリア</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"></use></svg><p>まだファイルを受信していません</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
+        <section class="send-pane" aria-label="コンテンツの送信">
+          <div class="section-heading"><h2>ファイル送信</h2><span>選択したデバイスのみ</span></div>
+          <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="この部屋のデバイス" hidden=""><div class="devices-heading"><strong>ファイルの送信先 </strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div></section>
+            <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"></use></svg><h2>ここにファイルをドロップ</h2><label for="files" class="button primary picker-button">ファイルを選択</label><input id="files" class="sr-only file-input" type="file" multiple=""><p class="drop-help">自動送信・複数のファイルを選択</p></div>
+            <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden=""><button id="retry-files" class="secondary" hidden="">未完了の項目を再試行</button><button id="clear-files" class="quiet">選択を解除</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
+          </div>
+          <div class="send-feedback" hidden=""><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden=""></progress><div id="send-rates"></div><button id="cancel-send" class="quiet" hidden="">送信を停止</button></div>
+        </section>
+        <div id="text-panel" aria-label="ルームチャット" class="panel-body chat-panel">
+            <div class="chat-heading"><h2>チャット</h2></div>
+            <div class="chat-window"><div id="chat-empty" class="chat-empty" aria-hidden="true"></div><div id="chat-log" class="chat-log" role="log" aria-label="このルームのメッセージ" aria-live="polite" tabindex="0"></div></div>
+            <div class="chat-compose"><label for="text-draft" class="sr-only">メッセージ</label><textarea id="text-draft" maxlength="20000" placeholder="メッセージ、リンク、またはコードを入力してください" spellcheck="false" rows="2"></textarea><button id="send-text" class="primary" aria-describedby="text-send-hint" disabled="">送信</button></div>
+            <div class="chat-compose-meta"><p id="text-send-hint" class="send-hint" role="status"></p><div><span id="text-count">0 / 20,000</span><button id="clear-text" class="quiet">入力クリア</button></div></div>
+          </div>
+
+      </div>
+      <p id="capacity-note" class="prototype-note" role="status">受信能力を確認中…</p><p class="prototype-note">信頼できるデバイスとのみペアリングしてください。転送中はこのページを開いたままにしてください。</p>
+    </main>
+    <footer class="site-footer"><nav class="site-links" aria-label="サイトナビゲーション"><a href="./en.html" hreflang="en" lang="en">English</a><a href="./zh-TW.html" hreflang="zh-TW" lang="zh-TW">ZH-TW</a><a href="./ja.html" hreflang="ja" lang="ja">JA</a><a href="./ko.html" hreflang="ko" lang="ko">KO</a><a href="./es.html" hreflang="es" lang="es">ES</a><a href="./fr.html" hreflang="fr" lang="fr">FR</a><a href="./de.html" hreflang="de" lang="de">DE</a><a href="./pt.html" hreflang="pt" lang="pt">PT</a><a href="./about.html" target="_blank" rel="noopener">このサイトについて</a><a href="./contact.html" target="_blank" rel="noopener">お問い合わせ</a><a href="./privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a><a href="./how-to-use.html" target="_blank" rel="noopener">使い方</a></nav><div class="footer-meta"><span>© 2026 Foster Fei · WarmDrop</span><a href="mailto:fanghong1994@gmail.com">fanghong1994@gmail.com</a></div></footer>
+  </div>
+  <dialog id="qr-dialog"><h2>スキャンしてルームに参加します</h2><img id="qr-image" alt="現在の部屋の QR コード" width="220" height="220"><p id="qr-note">アクセスを確認しています…</p><button class="primary">閉じる</button></dialog>
+  <dialog id="copy-dialog"><h2>手動コピー</h2><p>ブラウザが自動コピーをブロックしました。以下のテキストを選択してコピーします。</p><textarea readonly="" aria-label="コピーする内容"></textarea><button class="primary">閉じる</button></dialog>
+<dialog id="name-dialog"><h2>このデバイスに名前を付けます</h2><form id="name-form"><label for="device-name">デバイス名</label><input id="device-name" maxlength="24" required="" autocomplete="off"><p id="name-error" role="alert"></p><div class="actions"><button class="primary">保存</button><button id="cancel-name" type="button" class="quiet">キャンセル</button></div></form></dialog>
+
+
+</body></html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html><!----><html lang="ko" data-api-origin="https://api.rerechuan.com" data-static-language="ko"><head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="WarmDrop: 동일한 로컬 네트워크에 있는 장치 간에 파일 및 텍스트를 공유합니다. 설치나 계정이 필요하지 않습니다. 여러 장치를 지원합니다.">
+  <title>WarmDrop · 로컬 파일 공유</title><link rel="canonical" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-locales1"><script type="module" src="./workspace.js?v=0.8.1-locales1"></script>
+</head>
+<body data-theme="ember">
+  <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+    <symbol id="icon-file" viewBox="0 0 64 72"><path d="M38 4H12a5 5 0 0 0-5 5v54a5 5 0 0 0 5 5h40a5 5 0 0 0 5-5V23L38 4Z"></path><path d="M38 4v19h19M32 54V34m-9 9 9-9 9 9"></path></symbol>
+    <symbol id="icon-inbox" viewBox="0 0 64 52"><path d="m5 27 10-20h34l10 20v18H5V27Zm0 0h17l5 8h10l5-8h17"></path></symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24"><path d="m10 14 4-4M8 16l-1 1a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m0 12a4 4 0 0 0 6 0l5-5a4 4 0 0 0-6-6l-1 1" transform="translate(0 -1) scale(.96)"></path></symbol>
+  </defs></svg>
+
+  <div class="app-shell">
+    <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><img class="logo-light" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><span class="brand-wordmark">WarmDrop</span></a><div class="design-controls" hidden=""><a href="./styles.html">스타일 갤러리</a><label for="theme-select" class="sr-only">페이지 스타일</label><select id="theme-select"><option value="warm">01 우호적</option><option value="minimal">02 최소</option><option value="studio">03 스튜디오</option><option value="privacy">04 비공개</option><option value="bold">05 굵게</option><option value="ember">불씨 · 초안</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">의견 보내기</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">사용 방법</a></header>
+    <main>
+      <section class="intro"><h1><span>같은 로컬 네트워크에서</span> <span>파일을 직접 전송하세요.</span></h1><p>모바일 데이터나 서버 업로드 없이 로컬 네트워크를 통해 파일을 전송하세요.<br>웹사이트를 로드하고 장치를 페어링하려면 여전히 인터넷 액세스가 필요합니다.</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="connect-bar" aria-labelledby="room-heading">
+        <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"></use></svg><div><h2 id="room-heading">주변 장치 연결</h2><p>최대 6개 장치 · 동일한 네트워크</p></div></div>
+        <button id="create-room" class="primary">방 만들기</button>
+        <form id="pair-form" class="join-form pair-form" novalidate=""><label for="pair-code" class="sr-only">6자리 페어링 코드</label><input id="pair-code" type="text" inputmode="numeric" maxlength="7" autocomplete="off" placeholder="6자리 코드를 입력하세요"><button class="secondary">연결</button></form>
+        <span class="connection-state" id="connection-label" role="status">연결되지 않음</span>
+        <div id="room-details" class="room-details" hidden="">
+          <div class="room-identity"><strong id="self-device"></strong><button id="rename-device" class="quiet">이름 변경</button><button id="show-qr" class="secondary">휴대폰으로 스캔</button></div><details id="invite-options" open=""><summary>장치 초대 · 페어링 코드 및 링크</summary><div class="pairing-row"><div id="pairing-panel"><p class="pairing-label">다른 컴퓨터에 이 코드를 입력하세요</p><output id="pairing-code" aria-label="이 방의 페어링 코드 6자리"></output><p id="pairing-status" role="status"></p><button id="refresh-pair-code" class="secondary" hidden="">새 코드 받기</button></div></div>
+          <details class="share-more"><summary>전체 방 링크 복사</summary><label for="invite-link" id="invite-label">다른 장치에서 이 링크를 엽니다.</label><div class="invite-row"><input id="invite-link" readonly=""><button id="copy-link" class="secondary">링크 복사</button></div></details>
+          </details>
+          <div class="room-tools"><span id="room-expiry"></span><button id="copy-diagnostics" class="quiet" hidden="">진단 복사</button><button id="reconnect" class="quiet">다시 연결</button><button id="leave-room" class="quiet">방 나가기</button></div><p class="room-policy"><span id="room-limit">방당 최대 6개의 장치.</span><span id="network-note">액세스 확인 중…</span></p><p id="signal-note" role="status"></p><p id="resume-note" role="status"></p>
+        </div>
+        <details class="join-link-option"><summary>기존 룸 링크 사용</summary><form id="join-form" class="join-form" novalidate=""><label for="join-link" class="sr-only">룸링크</label><input id="join-link" type="url" maxlength="2048" autocomplete="off" placeholder="전체 회의실 링크 붙여넣기"><button class="secondary">방 참여</button></form></details>
+      </section>
+      <p id="compatibility-note" class="prototype-note">일부 네트워크 설정으로 인해 Windows와 iPhone이 직접 연결되지 않습니다. 호환성 개선이 예정되어 있습니다.</p>
+      <p id="room-error" class="error-line" role="alert" hidden=""></p>
+      <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden=""></button><button id="file-unread" class="quiet" aria-live="polite" aria-controls="inbox-list" hidden="">파일 수신됨 · 받은 편지함 보기</button></div></div>
+      <div class="workspace">
+        <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading" tabindex="-1"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>받은 파일</h2><button id="clear-inbox" class="quiet" hidden="">지우기</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"></use></svg><p>아직 수신된 파일이 없습니다.</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
+        <section class="send-pane" aria-label="콘텐츠 보내기">
+          <div class="section-heading"><h2>파일 보내기</h2><span>선택한 장치에만 해당</span></div>
+          <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="이 방에 있는 장치" hidden=""><div class="devices-heading"><strong>다음으로 파일 보내기 </strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div></section>
+            <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"></use></svg><h2>여기에 파일 놓기</h2><label for="files" class="button primary picker-button">파일 선택</label><input id="files" class="sr-only file-input" type="file" multiple=""><p class="drop-help">자동으로 보내기 · 여러 파일 선택</p></div>
+            <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden=""><button id="retry-files" class="secondary" hidden="">미완료 항목 재시도</button><button id="clear-files" class="quiet">선택 해제</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
+          </div>
+          <div class="send-feedback" hidden=""><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden=""></progress><div id="send-rates"></div><button id="cancel-send" class="quiet" hidden="">전송 중지</button></div>
+        </section>
+        <div id="text-panel" aria-label="방채팅" class="panel-body chat-panel">
+            <div class="chat-heading"><h2>채팅</h2></div>
+            <div class="chat-window"><div id="chat-empty" class="chat-empty" aria-hidden="true"></div><div id="chat-log" class="chat-log" role="log" aria-label="이 방의 메시지" aria-live="polite" tabindex="0"></div></div>
+            <div class="chat-compose"><label for="text-draft" class="sr-only">메시지</label><textarea id="text-draft" maxlength="20000" placeholder="메시지, 링크 또는 코드를 입력하세요." spellcheck="false" rows="2"></textarea><button id="send-text" class="primary" aria-describedby="text-send-hint" disabled="">보내기</button></div>
+            <div class="chat-compose-meta"><p id="text-send-hint" class="send-hint" role="status"></p><div><span id="text-count">0 / 20,000</span><button id="clear-text" class="quiet">입력 지우기</button></div></div>
+          </div>
+
+      </div>
+      <p id="capacity-note" class="prototype-note" role="status">수신 용량 확인 중…</p><p class="prototype-note">신뢰할 수 있는 장치에만 페어링하세요. 전송 중에 이 페이지를 열어두세요.</p>
+    </main>
+    <footer class="site-footer"><nav class="site-links" aria-label="사이트 탐색"><a href="./en.html" hreflang="en" lang="en">English</a><a href="./zh-TW.html" hreflang="zh-TW" lang="zh-TW">ZH-TW</a><a href="./ja.html" hreflang="ja" lang="ja">JA</a><a href="./ko.html" hreflang="ko" lang="ko">KO</a><a href="./es.html" hreflang="es" lang="es">ES</a><a href="./fr.html" hreflang="fr" lang="fr">FR</a><a href="./de.html" hreflang="de" lang="de">DE</a><a href="./pt.html" hreflang="pt" lang="pt">PT</a><a href="./about.html" target="_blank" rel="noopener">소개</a><a href="./contact.html" target="_blank" rel="noopener">문의</a><a href="./privacy.html" target="_blank" rel="noopener">개인정보 처리방침</a><a href="./how-to-use.html" target="_blank" rel="noopener">사용 방법</a></nav><div class="footer-meta"><span>© 2026 Foster Fei · WarmDrop</span><a href="mailto:fanghong1994@gmail.com">fanghong1994@gmail.com</a></div></footer>
+  </div>
+  <dialog id="qr-dialog"><h2>방에 참여하려면 스캔하세요.</h2><img id="qr-image" alt="현재 방의 QR 코드" width="220" height="220"><p id="qr-note">액세스 확인 중…</p><button class="primary">닫기</button></dialog>
+  <dialog id="copy-dialog"><h2>수동으로 복사</h2><p>브라우저가 자동 복사를 차단했습니다. 아래 텍스트를 선택하여 복사하세요.</p><textarea readonly="" aria-label="복사할 콘텐츠"></textarea><button class="primary">닫기</button></dialog>
+<dialog id="name-dialog"><h2>이 장치의 이름을 지정하세요.</h2><form id="name-form"><label for="device-name">장치 이름</label><input id="device-name" maxlength="24" required="" autocomplete="off"><p id="name-error" role="alert"></p><div class="actions"><button class="primary">저장</button><button id="cancel-name" type="button" class="quiet">취소</button></div></form></dialog>
+
+
+</body></html>
