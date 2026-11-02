@@ -4,9 +4,9 @@
 <head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="热热传是免安装、免注册的局域网文件传输工具。电脑和手机连接同一 Wi-Fi 或有线网络，用配对码或扫码互传文件、照片和文字，文件不上传云端；打开网页与配对仍需联网。">
-  <title>热热传｜局域网文件传输，电脑手机免安装互传</title><link rel="canonical" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-seo1"><script type="module" src="./workspace.js?v=0.8.1-seo1"></script>
+  <meta name="description" content="热热传支持手机电脑互传文件、照片和文字，包括 iPhone 与 Windows、Mac。连接同一局域网，扫码或输入配对码即可传输，免安装、免注册，文件不上传服务器；打开网页与配对需要联网。">
+  <title>热热传｜手机电脑互传文件，局域网免安装传输</title><link rel="canonical" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-phone1"><script type="module" src="./workspace.js?v=0.8.1-phone1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -32,16 +32,17 @@
         </div>
         <details class="join-link-option"><summary>使用已有房间链接</summary><form id="join-form" class="join-form" novalidate><label for="join-link" class="sr-only">房间链接</label><input id="join-link" type="url" maxlength="2048" autocomplete="off" placeholder="粘贴完整房间链接"><button class="secondary">加入房间</button></form></details>
       </section>
-      <p id="compatibility-note" class="prototype-note">部分网络环境下，Windows 与 iPhone 可能无法直连，兼容性待后续优化。</p>
+      <p id="compatibility-note" class="prototype-note">手机电脑互传文件，支持 iPhone 与 Windows。同一局域网，免安装。</p>
       <p id="room-error" class="error-line" role="alert" hidden></p>
       <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden></button><button id="file-unread" class="quiet" aria-live="polite" aria-controls="inbox-list" hidden>收到文件 · 查看收件箱</button></div></div>
       <div class="workspace">
         <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading" tabindex="-1"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"/></svg>收件箱</h2><button id="clear-inbox" class="quiet" hidden>清空</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"/></svg><p>还没有收到文件</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
         <section class="send-pane" aria-label="发送内容">
-          <div class="section-heading"><h2>传文件</h2><span>只发给你选的设备</span></div>
+          <div class="section-heading"><h2>传文件</h2><span>先发给所选设备</span></div>
           <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="房间中的设备" hidden><div class="devices-heading"><strong>文件发给</strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div></section>
             <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"/></svg><h2>拖入文件</h2><label for="files" class="button primary picker-button">选择文件</label><input id="files" class="sr-only file-input" type="file" multiple><p class="drop-help">放入即传 · 支持多选</p></div>
             <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden><button id="retry-files" class="secondary" hidden>重试未完成</button><button id="clear-files" class="quiet">清空选择</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
+            <details id="room-files" class="room-files" hidden><summary>房间文件</summary><p class="room-files-note">房内共享，按需接收。持有文件的设备需保持在线。</p><div id="room-file-list" class="room-file-list" aria-live="polite"></div></details>
           </div>
           <div class="send-feedback" hidden><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden></progress><div id="send-rates"></div><button id="cancel-send" class="quiet" hidden>停止发送</button></div>
         </section>
@@ -60,7 +61,7 @@
         <p>免安装、免注册，文件不上传云端。打开网页和设备配对仍需联网。</p>
         <div class="product-scenarios">
           <article><h3>Windows 和 Mac 互传文件</h3><p>两台电脑连接同一网络，用配对码连接浏览器，拖入文档、视频或压缩包即可发送。</p></article>
-          <article><h3>手机照片传电脑</h3><p>手机和电脑连接同一 Wi-Fi，扫码或输入配对码入房，再选中接收设备发送照片。部分 Windows 与 iPhone 组合可能无法直连。</p></article>
+          <article><h3>手机照片传电脑</h3><p>手机与电脑连接同一局域网，扫码或输入配对码，即可互传照片、视频和文档。支持 iPhone 与 Windows，无需安装应用。</p></article>
           <article><h3>跨设备发送文字和链接</h3><p>把网址、文字或代码发到聊天框，房间内已连接的设备都能收到。传文件时也能继续聊天。</p></article>
         </div>
         <nav><a href="./how-to-use.html">查看配对、接收和下载步骤</a><a href="./privacy.html">了解文件与连接信息如何处理</a></nav>

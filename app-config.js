@@ -1,5 +1,5 @@
-import {t,getLanguage} from './i18n.js?v=seo1';
-import {supportedLanguages,languageEntryFile} from './locales.js?v=seo1';
+import {t,getLanguage} from './i18n.js?v=phone1';
+import {supportedLanguages,languageEntryFile} from './locales.js?v=phone1';
 // Codex / 2026-10-26. Project path and signaling service are independent.
 export const appBaseURL = () => new URL('./', globalThis.location.href);
 export const apiURL = path => new URL(path, globalThis.document?.documentElement?.dataset.apiOrigin || globalThis.location.origin).href;

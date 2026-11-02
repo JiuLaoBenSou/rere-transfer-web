@@ -1,9 +1,9 @@
 <!DOCTYPE html><!----><html lang="zh-TW" data-api-origin="https://api.rerechuan.com" data-static-language="zh-TW"><head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="熱熱傳是免安裝、免註冊的區域網路檔案傳輸工具。電腦和手機連接相同 Wi-Fi 或有線網路，以配對碼或掃碼互傳檔案、照片和文字，檔案不上傳雲端；開啟網頁與配對仍需連網。">
-  <title>熱熱傳｜區域網路檔案傳輸，電腦手機免安裝互傳</title><link rel="canonical" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-seo1"><script type="module" src="./workspace.js?v=0.8.1-seo1"></script>
+  <meta name="description" content="熱熱傳支援手機電腦互傳檔案、照片和文字，包括 iPhone 與 Windows、Mac。連接同一區域網路，掃碼或輸入配對碼即可傳輸，免安裝、免註冊，檔案不上傳伺服器；開啟網頁與配對需要連網。">
+  <title>熱熱傳｜手機電腦互傳檔案，區域網路免安裝傳輸</title><link rel="canonical" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-phone1"><script type="module" src="./workspace.js?v=0.8.1-phone1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -29,16 +29,17 @@
         </div>
         <details class="join-link-option"><summary>使用已有房間鏈接</summary><form id="join-form" class="join-form" novalidate=""><label for="join-link" class="sr-only">房間鏈接</label><input id="join-link" type="url" maxlength="2048" autocomplete="off" placeholder="粘貼完整房間鏈接"><button class="secondary">加入房間</button></form></details>
       </section>
-      <p id="compatibility-note" class="prototype-note">部分網路環境下，Windows 與 iPhone 可能無法直連，兼容性待後續優化。</p>
+      <p id="compatibility-note" class="prototype-note">手機電腦互傳檔案，支援 iPhone 與 Windows。同一區域網路，免安裝。</p>
       <p id="room-error" class="error-line" role="alert" hidden=""></p>
       <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden=""></button><button id="file-unread" class="quiet" aria-live="polite" aria-controls="inbox-list" hidden="">收到檔案 · 查看收件匣</button></div></div>
       <div class="workspace">
         <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading" tabindex="-1"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>收件匣</h2><button id="clear-inbox" class="quiet" hidden="">清空</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"></use></svg><p>還沒有收到檔案</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
         <section class="send-pane" aria-label="發送內容">
-          <div class="section-heading"><h2>傳送檔案</h2><span>只發給你選的裝置</span></div>
+          <div class="section-heading"><h2>傳送檔案</h2><span>先傳給所選裝置</span></div>
           <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="房間中的裝置" hidden=""><div class="devices-heading"><strong>檔案發給</strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div></section>
             <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"></use></svg><h2>拖入檔案</h2><label for="files" class="button primary picker-button">選擇檔案</label><input id="files" class="sr-only file-input" type="file" multiple=""><p class="drop-help">放入即傳 · 支持多選</p></div>
             <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden=""><button id="retry-files" class="secondary" hidden="">重試未完成項目</button><button id="clear-files" class="quiet">清除選擇</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
+            <details id="room-files" class="room-files" hidden=""><summary>房間檔案</summary><p class="room-files-note">房內共享，按需接收。持有檔案的裝置需保持在線。</p><div id="room-file-list" class="room-file-list" aria-live="polite"></div></details>
           </div>
           <div class="send-feedback" hidden=""><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden=""></progress><div id="send-rates"></div><button id="cancel-send" class="quiet" hidden="">停止傳送</button></div>
         </section>
@@ -57,7 +58,7 @@
         <p>免安裝、免註冊，檔案不上傳雲端。開啟網頁和裝置配對仍需連網。</p>
         <div class="product-scenarios">
           <article><h3>Windows 和 Mac 互傳檔案</h3><p>兩台電腦連接相同網路，以配對碼連接瀏覽器，拖入文件、影片或壓縮檔即可傳送。</p></article>
-          <article><h3>手機照片傳到電腦</h3><p>手機和電腦連接相同 Wi-Fi，掃碼或輸入配對碼加入房間，再選擇接收裝置傳送照片。部分 Windows 與 iPhone 組合可能無法直連。</p></article>
+          <article><h3>手機照片傳到電腦</h3><p>手機與電腦連接同一區域網路，掃碼或輸入配對碼，即可互傳照片、影片和文件。支援 iPhone 與 Windows，無需安裝應用程式。</p></article>
           <article><h3>跨裝置傳送文字和連結</h3><p>將網址、文字或程式碼傳到聊天框，房間內已連線的裝置都能收到。傳檔案時也能繼續聊天。</p></article>
         </div>
         <nav><a href="./how-to-use.html">查看配對、接收和下載步驟</a><a href="./privacy.html">了解檔案與連線資訊如何處理</a></nav>

@@ -1,9 +1,9 @@
 <!DOCTYPE html><!----><html lang="ko" data-api-origin="https://api.rerechuan.com" data-static-language="ko"><head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="같은 Wi-Fi 또는 유선 네트워크에서 파일과 텍스트를 주고받으세요. 앱 설치와 가입 없이 코드나 QR로 연결합니다. 파일은 클라우드에 업로드하지 않으며, 웹페이지 로딩과 기기 연결에는 인터넷이 필요합니다.">
-  <title>WarmDrop — 같은 Wi-Fi 파일 전송, 설치 없이</title><link rel="canonical" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-seo1"><script type="module" src="./workspace.js?v=0.8.1-seo1"></script>
+  <meta name="description" content="iPhone, Windows, Mac을 포함한 휴대폰과 컴퓨터 간에 파일, 사진, 텍스트를 전송하세요. 같은 로컬 네트워크에서 QR이나 연결 코드로 브라우저를 연결합니다. 앱 설치, 가입, 클라우드 업로드가 없습니다. 사이트를 열고 기기를 연결하려면 인터넷이 필요합니다.">
+  <title>WarmDrop — 휴대폰·PC 파일 전송, 설치 없이</title><link rel="canonical" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-phone1"><script type="module" src="./workspace.js?v=0.8.1-phone1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -29,16 +29,17 @@
         </div>
         <details class="join-link-option"><summary>기존 룸 링크 사용</summary><form id="join-form" class="join-form" novalidate=""><label for="join-link" class="sr-only">룸링크</label><input id="join-link" type="url" maxlength="2048" autocomplete="off" placeholder="전체 회의실 링크 붙여넣기"><button class="secondary">방 참여</button></form></details>
       </section>
-      <p id="compatibility-note" class="prototype-note">일부 네트워크 설정으로 인해 Windows와 iPhone이 직접 연결되지 않습니다. 호환성 개선이 예정되어 있습니다.</p>
+      <p id="compatibility-note" class="prototype-note">휴대폰과 PC 간 파일 전송. iPhone과 Windows 지원. 같은 로컬 네트워크에서 설치 없이.</p>
       <p id="room-error" class="error-line" role="alert" hidden=""></p>
       <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden=""></button><button id="file-unread" class="quiet" aria-live="polite" aria-controls="inbox-list" hidden="">파일 수신됨 · 받은 편지함 보기</button></div></div>
       <div class="workspace">
         <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading" tabindex="-1"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>받은 파일</h2><button id="clear-inbox" class="quiet" hidden="">지우기</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"></use></svg><p>아직 수신된 파일이 없습니다.</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
         <section class="send-pane" aria-label="콘텐츠 보내기">
-          <div class="section-heading"><h2>파일 보내기</h2><span>선택한 장치에만 해당</span></div>
+          <div class="section-heading"><h2>파일 보내기</h2><span>선택한 기기에 먼저 전송</span></div>
           <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="이 방에 있는 장치" hidden=""><div class="devices-heading"><strong>다음으로 파일 보내기 </strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div></section>
             <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"></use></svg><h2>여기에 파일 놓기</h2><label for="files" class="button primary picker-button">파일 선택</label><input id="files" class="sr-only file-input" type="file" multiple=""><p class="drop-help">자동으로 보내기 · 여러 파일 선택</p></div>
             <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden=""><button id="retry-files" class="secondary" hidden="">미완료 항목 재시도</button><button id="clear-files" class="quiet">선택 해제</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
+            <details id="room-files" class="room-files" hidden=""><summary>방 파일</summary><p class="room-files-note">방에서 공유됩니다. 필요한 파일만 받으세요. 사본을 가진 기기가 온라인 상태여야 합니다.</p><div id="room-file-list" class="room-file-list" aria-live="polite"></div></details>
           </div>
           <div class="send-feedback" hidden=""><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden=""></progress><div id="send-rates"></div><button id="cancel-send" class="quiet" hidden="">전송 중지</button></div>
         </section>
@@ -57,7 +58,7 @@
         <p>앱 설치와 가입이 필요 없으며 파일은 클라우드에 업로드하지 않습니다. 웹페이지 로딩과 기기 연결에는 인터넷이 필요합니다.</p>
         <div class="product-scenarios">
           <article><h3>Windows와 Mac 간 파일 전송</h3><p>두 컴퓨터를 같은 네트워크에 연결하고 코드로 브라우저를 연결한 뒤, 문서나 동영상, ZIP 파일을 끌어다 놓아 전송하세요.</p></article>
-          <article><h3>휴대폰 사진을 컴퓨터로</h3><p>휴대폰과 컴퓨터를 같은 Wi-Fi에 연결하세요. QR을 스캔하거나 코드를 입력해 방에 들어온 뒤 받을 기기를 선택해 사진을 보냅니다. 일부 Windows와 iPhone 조합은 직접 연결되지 않을 수 있습니다.</p></article>
+          <article><h3>휴대폰 사진을 컴퓨터로</h3><p>휴대폰과 컴퓨터를 같은 로컬 네트워크에 연결하고 QR 또는 연결 코드로 사진, 동영상, 문서를 주고받으세요. iPhone과 Windows를 지원하며 앱 설치가 필요 없습니다.</p></article>
           <article><h3>기기 간 텍스트와 링크 전송</h3><p>채팅에 URL, 텍스트, 코드를 보내면 방 안의 연결된 모든 기기가 받습니다. 파일 전송 중에도 채팅을 사용할 수 있습니다.</p></article>
         </div>
         <nav><a href="./how-to-use.html">연결·수신·다운로드 방법 보기</a><a href="./privacy.html">파일과 연결 정보 처리 방식</a></nav>

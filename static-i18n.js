@@ -1,2 +1,2 @@
-import {initPage} from './i18n.js?v=seo1';
+import {initPage} from './i18n.js?v=phone1';
 initPage();

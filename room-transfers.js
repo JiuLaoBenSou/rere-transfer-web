@@ -1,7 +1,7 @@
-import {t} from './i18n.js?v=seo1';
+import {t} from './i18n.js?v=phone1';
 // Codex / 2026-10-26. Recipient snapshot and per-device completion.
 export class RoomTransfers {
-  constructor(onResult=()=>{}){this.sessions=new Map();this.onResult=onResult;this.receipts={clear:()=>{for(const {session}of this.sessions.values())session.receipts.clear();}};}
+  constructor(onResult=()=>{},onFileSent=()=>{}){this.sessions=new Map();this.onResult=onResult;this.onFileSent=onFileSent;this.receipts={clear:()=>{for(const {session}of this.sessions.values())session.receipts.clear();}};}
   set(id,session,peer){this.sessions.set(id,{session,peer});}
   get incoming(){return [...this.sessions.values()].find(v=>v.session.incoming)?.session.incoming;}
   get connected(){return [...this.sessions].filter(([,v])=>v.session.channel?.readyState==='open').map(([id])=>id);}
@@ -13,7 +13,7 @@ export class RoomTransfers {
     const results=await Promise.all(ids.map(async id=>{
       const entry=this.sessions.get(id),label=entry?.peer.label||t('设备 ')+id;
       if(delivered.has(id))return{id,label,ok:true};this.onResult(id,t('正在发送'));
-      try{if(entry?.session.channel?.readyState!=='open')throw new Error(t('未连通，请恢复连接后重试'));await entry.session[method](value);delivered.add(id);this.onResult(id,t('已接收 ✓'));return{id,label,ok:true};}
+      try{if(entry?.session.channel?.readyState!=='open')throw new Error(t('未连通，请恢复连接后重试'));const receipt=await entry.session[method](value);delivered.add(id);if(method==='sendFile')this.onFileSent(value,receipt);this.onResult(id,t('已接收 ✓'));return{id,label,ok:true};}
       catch(error){this.onResult(id,t('未完成 · ')+error.message);return{id,label,ok:false,reason:error.message};}
     }));
     const result={delivered:results.filter(r=>r.ok).length,total:ids.length,results};

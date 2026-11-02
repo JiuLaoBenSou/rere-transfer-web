@@ -1,9 +1,9 @@
 <!DOCTYPE html><!----><html lang="ja" data-api-origin="https://api.rerechuan.com" data-static-language="ja"><head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="同じWi-Fiや有線LANの端末間でファイルや文字を転送。アプリのインストール・登録は不要、ファイルはクラウドにアップロードしません。コードやQRで接続します。ページの読み込みと接続にはインターネットが必要です。">
-  <title>WarmDrop｜LAN内ファイル転送・インストール不要</title><link rel="canonical" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-seo1"><script type="module" src="./workspace.js?v=0.8.1-seo1"></script>
+  <meta name="description" content="スマホとパソコンでファイル、写真、テキストを転送。iPhone、Windows、Macに対応。同じLANでQRコードやペアリングコードを使い、ブラウザーから送れます。アプリ・登録不要、ファイルのクラウドアップロードなし。サイトの読み込みとペアリングにはインターネット接続が必要です。">
+  <title>WarmDrop｜スマホとパソコンのファイル転送・インストール不要</title><link rel="canonical" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-phone1"><script type="module" src="./workspace.js?v=0.8.1-phone1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -29,16 +29,17 @@
         </div>
         <details class="join-link-option"><summary>既存のルームリンクを使用する</summary><form id="join-form" class="join-form" novalidate=""><label for="join-link" class="sr-only">ルームリンク</label><input id="join-link" type="url" maxlength="2048" autocomplete="off" placeholder="完全なルームリンクを貼り付けてください"><button class="secondary">ルームに参加</button></form></details>
       </section>
-      <p id="compatibility-note" class="prototype-note">一部のネットワーク設定により、Windows と iPhone の直接接続が妨げられます。互換性の改善が計画されています。</p>
+      <p id="compatibility-note" class="prototype-note">スマホとパソコンでファイル転送。iPhoneとWindowsに対応。同じLANで、アプリ不要。</p>
       <p id="room-error" class="error-line" role="alert" hidden=""></p>
       <div class="connection-extra"><span id="connection-detail" role="status"></span><div><button id="chat-unread" class="quiet" hidden=""></button><button id="file-unread" class="quiet" aria-live="polite" aria-controls="inbox-list" hidden="">ファイルを受信しました · 受信箱を表示</button></div></div>
       <div class="workspace">
         <section class="inbox-pane" aria-labelledby="inbox-heading"><div class="inbox-header"><h2 id="inbox-heading" tabindex="-1"><svg class="small-icon" aria-hidden="true"><use href="#icon-inbox"></use></svg>受信トレイ</h2><button id="clear-inbox" class="quiet" hidden="">クリア</button></div><div id="inbox-empty" class="inbox-empty"><svg aria-hidden="true"><use href="#icon-inbox"></use></svg><p>まだファイルを受信していません</p></div><div id="inbox-list" class="inbox-list" aria-live="polite"></div></section>
         <section class="send-pane" aria-label="コンテンツの送信">
-          <div class="section-heading"><h2>ファイル送信</h2><span>選択したデバイスのみ</span></div>
+          <div class="section-heading"><h2>ファイル送信</h2><span>選択した端末に先に送信</span></div>
           <div id="file-panel" class="panel-body"><section id="devices-panel" class="devices-panel" aria-label="この部屋のデバイス" hidden=""><div class="devices-heading"><strong>ファイルの送信先 </strong><span id="device-count"></span></div><div id="device-list" class="device-list"></div></section>
             <div id="drop-zone" class="drop-zone"><svg class="upload-icon" aria-hidden="true"><use href="#icon-file"></use></svg><h2>ここにファイルをドロップ</h2><label for="files" class="button primary picker-button">ファイルを選択</label><input id="files" class="sr-only file-input" type="file" multiple=""><p class="drop-help">自動送信・複数のファイルを選択</p></div>
             <ul id="file-list" class="file-list"></ul><p id="queue-summary" class="queue-summary" role="status"></p><div id="file-actions" class="actions" hidden=""><button id="retry-files" class="secondary" hidden="">未完了の項目を再試行</button><button id="clear-files" class="quiet">選択を解除</button></div><p id="file-send-hint" class="send-hint" role="status"></p>
+            <details id="room-files" class="room-files" hidden=""><summary>ルームのファイル</summary><p class="room-files-note">ルーム内で共有されます。必要なファイルだけ受信できます。コピーを持つ端末はオンラインにしてください。</p><div id="room-file-list" class="room-file-list" aria-live="polite"></div></details>
           </div>
           <div class="send-feedback" hidden=""><p id="send-status" role="status"></p><progress id="send-progress" max="100" value="0" hidden=""></progress><div id="send-rates"></div><button id="cancel-send" class="quiet" hidden="">送信を停止</button></div>
         </section>
@@ -57,7 +58,7 @@
         <p>インストール・登録は不要。ファイルはクラウドにアップロードしません。ページの読み込みと端末の接続にはインターネットが必要です。</p>
         <div class="product-scenarios">
           <article><h3>WindowsとMacでファイル転送</h3><p>両方のパソコンを同じネットワークにつなぎ、コードでブラウザーを接続。文書、動画、ZIPファイルをドロップして送信します。</p></article>
-          <article><h3>スマホの写真をパソコンへ</h3><p>スマホとパソコンを同じWi-Fiにつなぎ、QRコードかペアリングコードで入室。送信先を選んで写真を送れます。一部のWindowsとiPhoneの組み合わせでは直接接続できません。</p></article>
+          <article><h3>スマホの写真をパソコンへ</h3><p>スマホとパソコンを同じLANにつなぎ、QRコードかペアリングコードで写真・動画・文書を転送できます。iPhoneとWindowsに対応し、アプリのインストールは不要です。</p></article>
           <article><h3>端末間で文字やリンクを送る</h3><p>URL、文字、コードをチャットに投稿すると、ルーム内の接続中の端末すべてに届きます。ファイル転送中もチャットを使えます。</p></article>
         </div>
         <nav><a href="./how-to-use.html">接続・受信・保存の手順を見る</a><a href="./privacy.html">ファイルと接続情報の取り扱い</a></nav>
