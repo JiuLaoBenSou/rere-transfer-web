@@ -4,9 +4,9 @@
 <head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="热热传支持手机电脑互传文件、照片和文字，包括 iPhone 与 Windows、Mac。连接同一局域网，扫码或输入配对码即可传输，免安装、免注册，文件不上传服务器；打开网页与配对需要联网。">
-  <title>热热传｜手机电脑互传文件，局域网免安装传输</title><link rel="canonical" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-phone1"><script type="module" src="./workspace.js?v=0.8.1-phone1"></script>
+  <meta name="description" content="热热传支持 iPhone、Windows 和 Mac 互传文件、照片和文字。打开网页，扫码或输入配对码加入房间，免安装、免注册。配对需要联网，文件在同一局域网内直传，不上传服务器。">
+  <title>热热传｜手机电脑互传文件，联网配对、局域网直传</title><link rel="canonical" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-phone1"><script type="module" src="./workspace.js?v=position1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -18,7 +18,7 @@
   <div class="app-shell">
     <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-logo-dark.svg" alt="热热传" width="147" height="48"><img class="logo-light" src="./rere-logo-light.svg" alt="热热传" width="147" height="48"></a><div class="design-controls" hidden><a href="./styles.html">五种风格</a><label for="theme-select" class="sr-only">页面风格</label><select id="theme-select"><option value="warm">01 亲切工具</option><option value="minimal">02 极简白</option><option value="studio">03 创作工作台</option><option value="privacy">04 安静深色</option><option value="bold">05 鲜明品牌</option><option value="ember">炉火暖色 · 试稿</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">反馈问题</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">使用说明</a></header>
     <main>
-      <section class="intro"><h1><span>局域网文件互传，</span><span>免安装，打开就能传。</span></h1><p>局域网内传文件，不耗移动数据流量，不上传服务器。<br>打开网页和设备配对仍需联网。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="intro"><h1><span>联网配对，</span> <span>局域网直传。</span></h1><p>打开网页，扫码或输入配对码加入房间。免安装、免注册。<br>配对需要联网，文件在同一局域网内直传，不上传服务器。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
         <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"/></svg><div><h2 id="room-heading">连接身边的设备</h2><p>最多 6 台 · 同一网络</p></div></div>
         <button id="create-room" class="primary">创建房间</button>
@@ -58,7 +58,7 @@
 
       <section class="product-guide" aria-labelledby="lan-guide-heading">
         <h2 id="lan-guide-heading">局域网互传，适合这些场景</h2>
-        <p>免安装、免注册，文件不上传云端。打开网页和设备配对仍需联网。</p>
+        <p>配对需要联网，文件在同一局域网内直传，不上传服务器。</p>
         <div class="product-scenarios">
           <article><h3>Windows 和 Mac 互传文件</h3><p>两台电脑连接同一网络，用配对码连接浏览器，拖入文档、视频或压缩包即可发送。</p></article>
           <article><h3>手机照片传电脑</h3><p>手机与电脑连接同一局域网，扫码或输入配对码，即可互传照片、视频和文档。支持 iPhone 与 Windows，无需安装应用。</p></article>

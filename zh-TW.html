@@ -1,9 +1,9 @@
 <!DOCTYPE html><!----><html lang="zh-TW" data-api-origin="https://api.rerechuan.com" data-static-language="zh-TW"><head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="熱熱傳支援手機電腦互傳檔案、照片和文字，包括 iPhone 與 Windows、Mac。連接同一區域網路，掃碼或輸入配對碼即可傳輸，免安裝、免註冊，檔案不上傳伺服器；開啟網頁與配對需要連網。">
-  <title>熱熱傳｜手機電腦互傳檔案，區域網路免安裝傳輸</title><link rel="canonical" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-phone1"><script type="module" src="./workspace.js?v=0.8.1-phone1"></script>
+  <meta name="description" content="熱熱傳支援 iPhone、Windows 和 Mac 互傳檔案、照片與文字。開啟網頁，掃碼或輸入配對碼加入房間，免安裝、免註冊。配對需要連網，檔案在同一區域網路內直傳，不上傳伺服器。">
+  <title>熱熱傳｜手機電腦互傳檔案，連網配對、區域網路直傳</title><link rel="canonical" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-phone1"><script type="module" src="./workspace.js?v=position1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -15,7 +15,7 @@
   <div class="app-shell">
     <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-symbol.svg" alt="熱熱傳" width="40" height="40" style="width:40px"><img class="logo-light" src="./rere-symbol.svg" alt="熱熱傳" width="40" height="40" style="width:40px"><span class="brand-wordmark">熱熱傳</span></a><div class="design-controls" hidden=""><a href="./styles.html">五種風格</a><label for="theme-select" class="sr-only">頁面風格</label><select id="theme-select"><option value="warm">01 親切工具</option><option value="minimal">02 極簡白</option><option value="studio">03 創作工作臺</option><option value="privacy">04 安靜深色</option><option value="bold">05 鮮明品牌</option><option value="ember">爐火暖色 · 試稿</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">問題回報</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">使用說明</a></header>
     <main>
-      <section class="intro"><h1><span>區域網路檔案互傳，</span><span>免安裝，開啟網頁就能傳。</span></h1><p>區域網路內傳檔案，不耗移動數據流量，不上傳伺服器。<br>打開網頁和裝置配對仍需聯網。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="intro"><h1><span>連網配對，</span> <span>區域網路直傳。</span></h1><p>開啟網頁，掃碼或輸入配對碼加入房間。免安裝、免註冊。<br>配對需要連網，檔案在同一區域網路內直傳，不上傳伺服器。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
         <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"></use></svg><div><h2 id="room-heading">連線身邊的裝置</h2><p>最多 6 臺 · 同一網路</p></div></div>
         <button id="create-room" class="primary">建立房間</button>
@@ -55,7 +55,7 @@
 
       <section class="product-guide" aria-labelledby="lan-guide-heading">
         <h2 id="lan-guide-heading">同一 Wi-Fi 下的檔案分享</h2>
-        <p>免安裝、免註冊，檔案不上傳雲端。開啟網頁和裝置配對仍需連網。</p>
+        <p>配對需要連網，檔案在同一區域網路內直傳，不上傳伺服器。</p>
         <div class="product-scenarios">
           <article><h3>Windows 和 Mac 互傳檔案</h3><p>兩台電腦連接相同網路，以配對碼連接瀏覽器，拖入文件、影片或壓縮檔即可傳送。</p></article>
           <article><h3>手機照片傳到電腦</h3><p>手機與電腦連接同一區域網路，掃碼或輸入配對碼，即可互傳照片、影片和文件。支援 iPhone 與 Windows，無需安裝應用程式。</p></article>

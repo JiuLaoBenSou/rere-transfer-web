@@ -1,4 +1,4 @@
-import {t} from './i18n.js?v=phone1';
+import {t} from './i18n.js?v=position1';
 // Codex / 2026-10-26. Recipient snapshot and per-device completion.
 export class RoomTransfers {
   constructor(onResult=()=>{},onFileSent=()=>{}){this.sessions=new Map();this.onResult=onResult;this.onFileSent=onFileSent;this.receipts={clear:()=>{for(const {session}of this.sessions.values())session.receipts.clear();}};}

@@ -1,9 +1,9 @@
 <!DOCTYPE html><!----><html lang="ja" data-api-origin="https://api.rerechuan.com" data-static-language="ja"><head>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.rerechuan.com wss://api.rerechuan.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="no-referrer"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="スマホとパソコンでファイル、写真、テキストを転送。iPhone、Windows、Macに対応。同じLANでQRコードやペアリングコードを使い、ブラウザーから送れます。アプリ・登録不要、ファイルのクラウドアップロードなし。サイトの読み込みとペアリングにはインターネット接続が必要です。">
-  <title>WarmDrop｜スマホとパソコンのファイル転送・インストール不要</title><link rel="canonical" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
-  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-phone1"><script type="module" src="./workspace.js?v=0.8.1-phone1"></script>
+  <meta name="description" content="iPhone・Windows・Mac間でファイル、写真、テキストを共有。ブラウザでQRコードを読み取るかペアリングコードを入力するだけ。アプリやアカウントは不要です。ペアリングにはインターネットを使い、ファイルは同じLAN内で直接転送します。">
+  <title>WarmDrop｜オンラインでペアリング、ファイルはLANで直接転送</title><link rel="canonical" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="zh-CN" href="https://rerechuan.com/"><link rel="alternate" hreflang="zh-TW" href="https://rerechuan.com/zh-TW.html"><link rel="alternate" hreflang="en" href="https://rerechuan.com/en.html"><link rel="alternate" hreflang="ja" href="https://rerechuan.com/ja.html"><link rel="alternate" hreflang="ko" href="https://rerechuan.com/ko.html"><link rel="alternate" hreflang="es" href="https://rerechuan.com/es.html"><link rel="alternate" hreflang="fr" href="https://rerechuan.com/fr.html"><link rel="alternate" hreflang="de" href="https://rerechuan.com/de.html"><link rel="alternate" hreflang="pt" href="https://rerechuan.com/pt.html"><link rel="alternate" hreflang="x-default" href="https://rerechuan.com/"><link rel="icon" href="./rere-symbol.svg">
+  <link rel="stylesheet" href="./workspace.css"><link rel="stylesheet" href="./ember.css"><link rel="stylesheet" href="./workspace-v8.css?v=20261029-phone1"><script type="module" src="./workspace.js?v=position1"></script>
 </head>
 <body data-theme="ember">
   <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -15,7 +15,7 @@
   <div class="app-shell">
     <header class="topbar"><a class="brand" href="./"><img class="logo-dark" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><img class="logo-light" src="./rere-symbol.svg" alt="WarmDrop" width="40" height="40" style="width:40px"><span class="brand-wordmark">WarmDrop</span></a><div class="design-controls" hidden=""><a href="./styles.html">スタイルギャラリー</a><label for="theme-select" class="sr-only">ページのスタイル</label><select id="theme-select"><option value="warm">01 フレンドリー</option><option value="minimal">02 ミニマル</option><option value="studio">03 スタジオ</option><option value="privacy">04 プライベート</option><option value="bold">05 ボールド</option><option value="ember">残り火・ドラフト</option></select></div><a class="site-feedback" href="./contact.html" target="_blank" rel="noopener">フィードバック</a><a class="site-help" href="./how-to-use.html" target="_blank" rel="noopener">使い方</a></header>
     <main>
-      <section class="intro"><h1><span>LAN内でファイル転送。</span><span>インストール不要。</span></h1><p>モバイル データやサーバーのアップロードを使用せずに、ローカル ネットワーク経由でファイルを転送します。<br>Web サイトの読み込みとデバイスのペアリングには、引き続きインターネット アクセスが必要です。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
+      <section class="intro"><h1><span>オンラインでペアリング。</span> <span>ファイルはLANで直接転送。</span></h1><p>両方のブラウザを開き、QRコードかペアリングコードでルームに参加。アプリもアカウントも不要です。<br>ペアリングにはインターネット接続が必要です。ファイルは同じLAN内の端末間で直接転送し、サーバーにはアップロードしません。</p><canvas id="transfer-mark" class="transfer-mark" width="272" height="112" aria-hidden="true"></canvas></section>
       <section class="connect-bar" aria-labelledby="room-heading">
         <div class="room-title"><svg class="small-icon" aria-hidden="true"><use href="#icon-link"></use></svg><div><h2 id="room-heading">近くのデバイスを接続する</h2><p>最大 6 台のデバイス · 同一ネットワーク</p></div></div>
         <button id="create-room" class="primary">ルームを作成</button>
@@ -55,7 +55,7 @@
 
       <section class="product-guide" aria-labelledby="lan-guide-heading">
         <h2 id="lan-guide-heading">同じWi-Fiでファイルを共有</h2>
-        <p>インストール・登録は不要。ファイルはクラウドにアップロードしません。ページの読み込みと端末の接続にはインターネットが必要です。</p>
+        <p>ペアリングにはインターネット接続が必要です。ファイルは同じLAN内の端末間で直接転送し、サーバーにはアップロードしません。</p>
         <div class="product-scenarios">
           <article><h3>WindowsとMacでファイル転送</h3><p>両方のパソコンを同じネットワークにつなぎ、コードでブラウザーを接続。文書、動画、ZIPファイルをドロップして送信します。</p></article>
           <article><h3>スマホの写真をパソコンへ</h3><p>スマホとパソコンを同じLANにつなぎ、QRコードかペアリングコードで写真・動画・文書を転送できます。iPhoneとWindowsに対応し、アプリのインストールは不要です。</p></article>

@@ -1,6 +1,6 @@
-import {t} from './i18n.js?v=phone1';
+import {t} from './i18n.js?v=position1';
 // Codex / 2026-10-26. Independent acknowledged chat; forwarding stays in this room.
-import {randomId}from'./id.js?v=phone1';
+import {randomId}from'./id.js?v=position1';
 const ID=/^[a-f0-9-]{36}$/i,PEER=/^\d{6}$/;
 export class RoomChat {
  constructor(selfId,hooks={},options={}){this.selfId=selfId;this.hooks=hooks;this.peers=new Map();this.channels=new Map();this.seen=new Map();this.pending=new Map();this.history=new Map();this.historyBytes=0;this.historyLimit=options.historyLimit||200;this.ackTimeout=options.ackTimeout||10000;this.disposed=false;}

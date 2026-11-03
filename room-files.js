@@ -1,5 +1,5 @@
 // Room-only file catalog. Metadata travels over chat DataChannels; bytes use the existing verified file transport.
-import {randomId} from './id.js?v=phone1';
+import {randomId} from './id.js?v=position1';
 const HASH=/^[a-f0-9]{64}$/,PEER=/^\d{6}$/,REQUEST=/^[a-f0-9-]{36}$/i;
 export class RoomFiles {
  constructor(selfId,hooks={}){this.selfId=selfId;this.hooks=hooks;this.peers=new Set();this.entries=new Map();this.local=new Map();this.pending=new Map();this.serving=new Set();this.disposed=false;}

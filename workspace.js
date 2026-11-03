@@ -1,19 +1,19 @@
-import {UsageReporter} from './usage.js?v=phone1';
-import {drawQR} from './vendor/reference/qr.js?v=phone1';
-import {t,initPage,getLanguage} from './i18n.js?v=phone1';
+import {UsageReporter} from './usage.js?v=position1';
+import {drawQR} from './vendor/reference/qr.js?v=position1';
+import {t,initPage,getLanguage} from './i18n.js?v=position1';
 // Codex / 2026-10-25. Local controller. File/text bytes use the DataChannel only.
-import { TransferSession, MAX_FILE } from './transfer.js?v=phone1';
-import { TransferRate, formatRate } from './transfer-rate.js?v=phone1';
-import { ReceiverStore } from './receiver-store.js?v=phone1';
-import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=phone1';
-import { GroupLink } from './group-link.js?v=phone1';
-import { RoomTransfers } from './room-transfers.js?v=phone1';
-import { createTransferMark } from './transfer-mark.js?v=phone1';
-import { apiURL, inviteURL, readInvite } from './app-config.js?v=phone1';
-import { deviceLabel, DeviceProfile } from './device-profile.js?v=phone1';
-import { RoomChat } from './room-chat.js?v=phone1';
-import { RoomFiles } from './room-files.js?v=phone1';
-import { randomId } from './id.js?v=phone1';
+import { TransferSession, MAX_FILE } from './transfer.js?v=position1';
+import { TransferRate, formatRate } from './transfer-rate.js?v=position1';
+import { ReceiverStore } from './receiver-store.js?v=position1';
+import { RoomLink, CONNECTION_BUILD } from './room-link.js?v=position1';
+import { GroupLink } from './group-link.js?v=position1';
+import { RoomTransfers } from './room-transfers.js?v=position1';
+import { createTransferMark } from './transfer-mark.js?v=position1';
+import { apiURL, inviteURL, readInvite } from './app-config.js?v=position1';
+import { deviceLabel, DeviceProfile } from './device-profile.js?v=position1';
+import { RoomChat } from './room-chat.js?v=position1';
+import { RoomFiles } from './room-files.js?v=position1';
+import { randomId } from './id.js?v=position1';
 initPage();
 const $ = selector => document.querySelector(selector);
 // Internal tools are opt-in; ordinary invitations never carry this flag.

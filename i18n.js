@@ -1,7 +1,7 @@
-import i18next from './vendor/i18next/i18next.js?v=phone1';
-import LanguageDetector from './vendor/i18next/detector.js?v=phone1';
-import en from './locales-en.js?v=phone1';
-import {supportedLanguages,loadCatalog,localeCatalogs,languageEntryFile} from './locales.js?v=phone1';
+import i18next from './vendor/i18next/i18next.js?v=position1';
+import LanguageDetector from './vendor/i18next/detector.js?v=position1';
+import en from './locales-en.js?v=position1';
+import {supportedLanguages,loadCatalog,localeCatalogs,languageEntryFile} from './locales.js?v=position1';
 export function resolveLanguage({query,saved,languages=[]}={}){
  for(const value of[query,saved,...languages]){if(/^zh-(TW|HK|MO|Hant)(?:-|$)/i.test(value||''))return'zh-TW';if(/^zh(?:-|$)/i.test(value||''))return'zh-CN';const short=String(value||'').toLowerCase().split('-')[0];if(supportedLanguages.some(([code])=>code===short))return short;}return'zh-CN';
 }
